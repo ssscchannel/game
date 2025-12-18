@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>晟自然輔助系統　遊戲室 V13-2</title>
+    <title>晟自然輔助系統　遊戲室 V13-3</title>
     <style>
         :root {
             /* 配色系統 */
@@ -27,12 +27,12 @@
             --btn-height: 55px;
         }
 
-        /* 基礎設定 - 強制滿版且不滾動 */
+        /* 基礎設定 - 強制滿版且不滾動 (解決手機版面太長問題) */
         body {
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
             background-color: var(--bg-deep);
-            height: 100dvh; /* 使用動態視口高度，解決手機網址列問題 */
+            height: 100dvh; /* 使用動態視口高度 */
             width: 100vw;
             overflow: hidden; /* 禁止 body 捲動 */
             display: flex; justify-content: center; align-items: center;
@@ -62,7 +62,7 @@
             }
         }
 
-        /* 畫面層管理 - Flex 佈局核心 */
+        /* 畫面層管理 */
         .screen {
             position: absolute; inset: 0; /* 強制填滿 */
             display: flex; flex-direction: column;
@@ -71,16 +71,18 @@
             transition: opacity 0.3s ease;
             opacity: 0; pointer-events: none; z-index: 0;
             visibility: hidden;
-            overflow: hidden; /* 每個畫面內部管理自己的溢出 */
+            overflow: hidden; 
         }
         .screen.active { opacity: 1; pointer-events: auto; z-index: 10; visibility: visible; }
         .screen.f1-theme { background: rgba(0,0,0,0.95); z-index: 20; }
+        .screen.admin-theme { background: rgba(20, 20, 30, 0.98); z-index: 30; }
 
         /* --- 頂部區域 --- */
         .header-section {
             display: flex; flex-direction: column; align-items: center;
             flex-shrink: 0; /* 禁止壓縮 */
             margin-bottom: 10px;
+            cursor: pointer; /* 暗示可點擊 */
         }
 
         .brand-row {
@@ -89,6 +91,7 @@
             background: rgba(0,0,0,0.3);
             padding: 5px 15px; border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.1);
+            pointer-events: none; /* 讓點擊穿透到 header-section */
         }
         .logo-img { height: 28px; width: auto; }
         .system-title { font-size: 0.95rem; font-weight: bold; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); letter-spacing: 1px; }
@@ -98,29 +101,26 @@
             text-shadow: 0 0 10px rgba(0, 210, 255, 0.8);
             letter-spacing: 2px;
             animation: breathe 3s infinite ease-in-out;
+            pointer-events: none;
         }
         @keyframes breathe {
             0%, 100% { transform: scale(1); filter: brightness(1); }
             50% { transform: scale(1.02); filter: brightness(1.2); }
         }
 
-        /* --- 中間可捲動區域 (V13-1/2 修復重點) --- */
-        /* 任何需要捲動的容器都加上這個 class */
+        /* --- V13 核心修復：可捲動內容區 --- */
+        /* 中間區域自動伸縮，內容多時捲動 */
         .scrollable-content {
             flex: 1; 
-            min-height: 0; /* 重要：讓 Flex 子元素可以縮小 */
-            overflow-y: auto; /* 內容過多時捲動 */
+            min-height: 0; 
+            overflow-y: auto; 
             margin-bottom: 10px;
-            /* 自定義捲軸樣式 */
             scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.3) transparent;
         }
 
         /* 排行榜 Grid */
         .leaderboard-grid {
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 8px; 
-            padding-bottom: 5px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 5px;
         }
 
         .mode-box {
@@ -165,11 +165,11 @@
         .rank-name { flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ddd; }
         .rank-time { color: var(--accent-neon); font-family: monospace; font-weight: bold; margin-left: 2px; }
 
-        /* --- 底部按鈕區 --- */
+        /* --- 底部按鈕區 (固定在下方) --- */
         .footer-action { 
             width: 100%; display: flex; justify-content: center;
             flex-shrink: 0; /* 禁止壓縮 */
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 避開手機底部橫條 */
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 避開 iPhone 底部橫條 */
         }
         
         .start-btn {
@@ -187,7 +187,7 @@
             50% { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 198, 255, 0.8); }
         }
 
-        /* --- 輸入頁特定樣式 --- */
+        /* --- UI 元件 --- */
         .input-field {
             background: rgba(255,255,255,0.1); border: 1px solid var(--primary-neon);
             color: white; border-radius: 10px; padding: 0 15px; height: var(--input-height);
@@ -201,12 +201,7 @@
         .btn-start { background: var(--primary-neon); color: black; box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
         .btn-back { background: rgba(255,255,255,0.15); color: white; backdrop-filter: blur(5px); }
         
-        .btn-small {
-            padding: 5px 10px; border-radius: 15px; border: 1px solid #555;
-            background: rgba(255,255,255,0.1); color: #ccc; font-size: 0.8rem; cursor: pointer;
-        }
-        
-        /* 錯誤提示框 */
+        /* 錯誤覆蓋層 */
         #error-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 9999;
@@ -214,13 +209,11 @@
             color: #ff4d4d; padding: 20px; text-align: center;
         }
 
-        /* 其他原有樣式保留 */
+        /* 樣式保留 */
         .section-label { color: var(--primary-neon); font-size: 1rem; font-weight: bold; margin: 8px 0 5px 0; }
         .bank-selector { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; flex-shrink: 0; }
         .bank-btn { flex: 1; min-width: 80px; height: 50px; background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; border-radius: 10px; }
         .bank-btn.selected { background: var(--primary-neon); color: black; }
-        
-        /* Mode container 不再負責滾動，由外層 scrollable-content 負責 */
         .mode-container { display: flex; flex-direction: column; gap: 10px; }
         .mode-row { display: flex; gap: 10px; flex-shrink: 0; }
         .mode-btn { flex: 1; height: 50px; background: rgba(255,255,255,0.1); border-radius: 10px; color: #ccc; border:1px solid #555; }
@@ -234,7 +227,7 @@
         .card.error { background-color: #5a1a1a; border-color: #ff4d4d; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        /* F1 樣式 */
+        /* F1 & Table */
         .rank-table { width: 100%; border-collapse: collapse; color: white; margin-top: 10px; }
         .rank-table td, .rank-table th { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 5px; }
         .podium { display: flex; align-items: flex-end; justify-content: center; height: 200px; gap: 10px; margin: 20px 0; }
@@ -242,26 +235,34 @@
         .p-1 { height: 180px; background: #f1c40f; } .p-2 { height: 130px; background: #bdc3c7; } .p-3 { height: 90px; background: #d35400; }
         .crown-icon { position: absolute; top: -30px; font-size: 1.5rem; }
         
-        /* 歷史紀錄 */
         #history-list { overflow-y: auto; flex: 1; }
         .hist-row { display: grid; grid-template-columns: 1fr 80px 1fr; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; color: white; font-size: 0.9rem; }
         
-        /* 狀態指示燈 */
+        /* 狀態燈 */
         .storage-indicator {
             position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; border-radius: 50%;
-            z-index: 100;
+            z-index: 100; pointer-events: none;
         }
         .storage-ok { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
         .storage-warn { background: #f1c40f; box-shadow: 0 0 5px #f1c40f; }
+
+        /* Admin 按鈕樣式 */
+        .btn-admin-row {
+            display: flex; gap: 10px; margin-bottom: 10px;
+        }
+        .btn-danger {
+            background: linear-gradient(to bottom, #c0392b, #e74c3c);
+            color: white; border: 1px solid #922b21;
+        }
 
     </style>
 </head>
 <body>
 
-<div id="storage-status" class="storage-indicator storage-warn" title="存檔狀態"></div>
+<div id="storage-status" class="storage-indicator" title="存檔狀態"></div>
 
 <div id="error-overlay">
-    <h2>⚠️ 系統錯誤</h2>
+    <h2>⚠️ 系統異常</h2>
     <p id="error-msg">初始化失敗</p>
     <button class="btn-thick" style="background:#fff; color:#000; width:200px; margin-top:20px;" onclick="location.reload()">重新整理</button>
 </div>
@@ -271,7 +272,7 @@
 <div id="app-container">
     
     <div id="screen-lobby" class="screen active">
-        <div class="header-section">
+        <div class="header-section" onclick="APP.checkAdminTrigger()">
             <div class="brand-row">
                 <img src="logo.jpg" alt="Logo" class="logo-img" onerror="this.style.display='none'">
                 <div class="system-title">晟自然輔助系統　遊戲室</div>
@@ -281,12 +282,40 @@
         
         <div class="scrollable-content">
             <div class="leaderboard-grid" id="leaderboard-grid">
-                <div style="color:white; grid-column:span 2; text-align:center; padding:20px;">載入中...</div>
+                <div style="color:white; grid-column:span 2; text-align:center; padding:20px;">
+                    初始化中...<br><span style="font-size:0.8rem; color:#aaa;">若久無反應請檢查瀏覽器權限</span>
+                </div>
             </div>
         </div>
 
         <div class="footer-action">
             <button class="start-btn" onclick="APP.navTo('input')">🚀 開始挑戰</button>
+        </div>
+    </div>
+
+    <div id="screen-admin" class="screen admin-theme">
+        <h2 style="color:var(--primary-neon); text-align:center; border-bottom:1px solid #555; padding-bottom:10px;">🛠️ 後台管理</h2>
+        
+        <div class="scrollable-content" style="display:flex; flex-direction:column; justify-content:center; gap:20px;">
+            <div>
+                <div class="section-label">資料備份與還原</div>
+                <div style="color:#aaa; font-size:0.9rem; margin-bottom:10px;">
+                    將成績紀錄匯出為檔案，或從檔案還原紀錄。適用於更換設備或備份。
+                </div>
+                <button class="btn-thick" style="background:#2980b9; color:white;" onclick="APP.exportData()">📥 匯出紀錄 (備份)</button>
+                <button class="btn-thick" style="background:#27ae60; color:white;" onclick="document.getElementById('file-input').click()">📤 匯入紀錄 (還原)</button>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #444; width:100%;">
+
+            <div>
+                <div class="section-label" style="color:#e74c3c;">危險操作</div>
+                <button class="btn-thick btn-danger" onclick="APP.clearAllData()">🗑️ 清除所有紀錄</button>
+            </div>
+        </div>
+
+        <div class="footer-action">
+            <button class="btn-thick btn-back" onclick="APP.navTo('lobby')">返回首頁</button>
         </div>
     </div>
 
@@ -299,13 +328,6 @@
                 <div style="flex:1;"><label style="color:#aaa; font-size:0.9rem;">暱稱</label><input type="text" id="input-name" class="input-field" maxlength="5"></div>
             </div>
             
-            <div class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>資料保險箱</span>
-                <div>
-                    <button class="btn-small" onclick="APP.exportData()">匯出備份</button>
-                    <button class="btn-small" onclick="document.getElementById('file-input').click()">匯入還原</button>
-                </div>
-            </div>
             <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15); margin:10px 0;">
 
             <div class="section-label">選擇題組</div>
@@ -419,26 +441,41 @@
 </div>
 
 <script>
-    // V13-2: SafeStorage + 匯出/匯入系統
+    // ==========================================================
+    // 0. 版本歷程
+    // ==========================================================
+    const VERSION_HISTORY = {
+        "V13": "手機RWD佈局重構(使用dvh與Flexbox)。",
+        "V13-1": "新增 SafeStorage 模組，嘗試修復手機離線存取崩潰問題。",
+        "V13-2": "增加檔案匯出/匯入功能。版面滾動優化。",
+        "V13-3": "隱藏後台管理(連點標題3下)。修復手機載入中當機問題(Try-Catch Guard)。清除紀錄功能。"
+    };
+
+    // ==========================================================
+    // 1. 核心安全儲存模組 (V13-3 Fix: 移至最上方確保優先執行)
+    // ==========================================================
     const SafeStorage = {
         _data: {},
         isAvailable: false,
         init: function() {
             const ind = document.getElementById('storage-status');
             try {
-                localStorage.setItem('test', '1');
-                localStorage.removeItem('test');
+                // 測試是否可用 (手機離線檔案可能會在這裡報錯)
+                localStorage.setItem('test_perm', '1');
+                localStorage.removeItem('test_perm');
                 this.isAvailable = true;
                 console.log("Storage: LocalStorage is available.");
                 if(ind) { ind.className = 'storage-indicator storage-ok'; ind.title = "已啟用永久存檔"; }
             } catch (e) {
-                console.warn("Storage: LocalStorage failed, using memory fallback.");
+                console.warn("Storage: LocalStorage denied/failed. Using memory fallback.");
                 this.isAvailable = false;
                 if(ind) { ind.className = 'storage-indicator storage-warn'; ind.title = "暫存模式(關閉後消失)"; }
             }
         },
         getItem: function(key) {
-            if (this.isAvailable) return localStorage.getItem(key);
+            if (this.isAvailable) {
+                try { return localStorage.getItem(key); } catch(e) { return null; }
+            }
             return this._data[key] || null;
         },
         setItem: function(key, value) {
@@ -446,9 +483,18 @@
                 try { localStorage.setItem(key, value); } catch(e) {}
             }
             this._data[key] = value;
+        },
+        clear: function() {
+            if (this.isAvailable) {
+                try { localStorage.clear(); } catch(e) {}
+            }
+            this._data = {};
         }
     };
 
+    // ==========================================================
+    // 2. 資料庫
+    // ==========================================================
     const DEFAULT_DATA = {
         banks: [
             { id: "b1", title: "常見週期表", pairs: [ {q:"H", a:"氫"}, {q:"Li", a:"鋰"}, {q:"Na", a:"鈉"}, {q:"K", a:"鉀"}, {q:"Rb", a:"銣"}, {q:"Cs", a:"銫"}, {q:"Be", a:"鈹"}, {q:"Mg", a:"鎂"}, {q:"Ca", a:"鈣"}, {q:"Sr", a:"鍶"}, {q:"Ba", a:"鋇"}, {q:"Ti", a:"鈦"}, {q:"Cr", a:"鉻"}, {q:"Mn", a:"錳"}, {q:"Fe", a:"鐵"}, {q:"Co", a:"鈷"}, {q:"Ni", a:"鎳"}, {q:"Cu", a:"銅"}, {q:"Zn", a:"鋅"}, {q:"B", a:"硼"}, {q:"Al", a:"鋁"}, {q:"C", a:"碳"}, {q:"Si", a:"矽"}, {q:"N", a:"氮"}, {q:"P", a:"磷"}, {q:"O", a:"氧"}, {q:"S", a:"硫"}, {q:"F", a:"氟"}, {q:"Cl", a:"氯"}, {q:"Br", a:"溴"}, {q:"I", a:"碘"}, {q:"He", a:"氦"}, {q:"Ne", a:"氖"}, {q:"Ar", a:"氬"}, {q:"Ag", a:"銀"}, {q:"Au", a:"金"}, {q:"Hg", a:"汞"}, {q:"Pb", a:"鉛"}, {q:"U", a:"鈾"} ] },
@@ -460,18 +506,25 @@
     let APP_DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
     const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 
+    // ==========================================================
+    // 3. 應用程式邏輯
+    // ==========================================================
     const APP = {
         state: {
             history: [],
             currentBankId: "b1",
             currentMode: "standard",
             leaderboardTabs: { standard: 'b1', survival: 'b1' },
-            currentPlayer: { name: "", school: "" }
+            currentPlayer: { name: "", school: "" },
+            adminClicks: 0,
+            adminTimer: null
         },
 
         init: function() {
+            // V13-3: 嚴格的 Try-Catch 包裹，防止崩潰
             try {
-                SafeStorage.init();
+                SafeStorage.init(); 
+
                 const saved = SafeStorage.getItem('cheng_nature_game_log_v2');
                 if (saved) APP.state.history = JSON.parse(saved);
 
@@ -485,26 +538,49 @@
                 F1.initSetup();
                 
             } catch (e) {
+                // 如果真的崩潰，顯示錯誤給使用者
                 console.error("Critical Init Error:", e);
                 document.getElementById('error-overlay').style.display = 'flex';
                 document.getElementById('error-msg').innerText = "啟動錯誤：" + e.message;
             }
         },
 
-        // V13-2 新增：資料匯出
+        // V13-3: 檢查是否進入後台 (3連擊)
+        checkAdminTrigger: function() {
+            APP.state.adminClicks++;
+            if (APP.state.adminTimer) clearTimeout(APP.state.adminTimer);
+            
+            APP.state.adminTimer = setTimeout(() => {
+                APP.state.adminClicks = 0;
+            }, 500); // 0.5秒內要連點
+
+            if (APP.state.adminClicks >= 3) {
+                APP.state.adminClicks = 0;
+                APP.navTo('admin');
+            }
+        },
+
+        // V13-3: 清除所有資料
+        clearAllData: function() {
+            if (confirm("⚠️ 警告：這將刪除本機所有的成績紀錄，且無法復原！\n\n確定要清除嗎？")) {
+                SafeStorage.clear();
+                APP.state.history = [];
+                SafeStorage.setItem('test_reset', '1'); // 測試寫入
+                alert("所有紀錄已清除！");
+                APP.updateLeaderboardV11();
+                APP.navTo('lobby');
+            }
+        },
+
         exportData: function() {
             const dataStr = JSON.stringify(APP.state.history);
             const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            let exportFileDefaultName = 'cheng_nature_save.json';
-            
             let linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.setAttribute('download', 'cheng_nature_save.json');
             linkElement.click();
         },
 
-        // V13-2 新增：資料匯入
         importData: function(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -514,18 +590,14 @@
                         if(Array.isArray(imported)) {
                             APP.state.history = imported;
                             SafeStorage.setItem('cheng_nature_game_log_v2', JSON.stringify(imported));
-                            alert("匯入成功！紀錄已更新。");
+                            alert("匯入成功！");
                             APP.updateLeaderboardV11();
-                        } else {
-                            alert("格式錯誤：檔案內容不正確。");
-                        }
-                    } catch(err) {
-                        alert("匯入失敗：檔案損毀或格式錯誤。");
-                    }
+                        } else { alert("格式錯誤"); }
+                    } catch(err) { alert("匯入失敗"); }
                 };
                 reader.readAsText(input.files[0]);
             }
-            input.value = ""; // 重置，允許重複選同一檔
+            input.value = "";
         },
 
         navTo: function(screenId, filterStr = null) {
@@ -631,7 +703,7 @@
                     }
                     
                     if(logs.length === 0) {
-                        listContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#666;">無紀錄</div>`;
+                        listContainer.innerHTML = `<div style="text-align:center; padding:20px; color:#666; font-size:0.8rem;">尚無紀錄</div>`;
                     } else {
                         logs.slice(0, 5).forEach((log, idx) => {
                             const row = document.createElement('div');
@@ -1011,7 +1083,9 @@
         }
     };
 
+    // 啟動點 (V13-3 Fix: 放在 SafeStorage 定義之後)
     window.onload = APP.init;
+
 </script>
 </body>
 </html>
