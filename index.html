@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>晟自然輔助系統　遊戲室 V13-1</title>
+    <title>晟自然輔助系統　遊戲室 V13-2</title>
     <style>
         :root {
             /* 配色系統 */
@@ -32,7 +32,7 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
             background-color: var(--bg-deep);
-            height: 100dvh; /* 使用動態視口高度 */
+            height: 100dvh; /* 使用動態視口高度，解決手機網址列問題 */
             width: 100vw;
             overflow: hidden; /* 禁止 body 捲動 */
             display: flex; justify-content: center; align-items: center;
@@ -104,9 +104,9 @@
             50% { transform: scale(1.02); filter: brightness(1.2); }
         }
 
-        /* --- 中間排行榜區域 (V13-1 修復重點) --- */
-        /* 使用 Flex: 1 佔據剩餘空間，並允許內部捲動 */
-        .leaderboard-scroll-area {
+        /* --- 中間可捲動區域 (V13-1/2 修復重點) --- */
+        /* 任何需要捲動的容器都加上這個 class */
+        .scrollable-content {
             flex: 1; 
             min-height: 0; /* 重要：讓 Flex 子元素可以縮小 */
             overflow-y: auto; /* 內容過多時捲動 */
@@ -115,7 +115,7 @@
             scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.3) transparent;
         }
 
-        /* 內層 Grid，不用管高度，由外層決定可視範圍 */
+        /* 排行榜 Grid */
         .leaderboard-grid {
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -132,7 +132,7 @@
             backdrop-filter: blur(5px);
             cursor: pointer;
             transition: border-color 0.2s;
-            height: 180px; /* 給定一個合理高度，超過則外層捲動 */
+            height: 180px; 
         }
         .mode-box:active { border-color: var(--primary-neon); }
         
@@ -169,7 +169,7 @@
         .footer-action { 
             width: 100%; display: flex; justify-content: center;
             flex-shrink: 0; /* 禁止壓縮 */
-            padding-bottom: 10px; /* 增加底部留白 */
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 避開手機底部橫條 */
         }
         
         .start-btn {
@@ -187,7 +187,7 @@
             50% { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 198, 255, 0.8); }
         }
 
-        /* --- 通用 UI 元件 --- */
+        /* --- 輸入頁特定樣式 --- */
         .input-field {
             background: rgba(255,255,255,0.1); border: 1px solid var(--primary-neon);
             color: white; border-radius: 10px; padding: 0 15px; height: var(--input-height);
@@ -196,9 +196,15 @@
         .btn-thick {
             width: 100%; height: var(--btn-height); border-radius: 30px; border: none;
             font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+            margin-bottom: 10px;
         }
         .btn-start { background: var(--primary-neon); color: black; box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); }
         .btn-back { background: rgba(255,255,255,0.15); color: white; backdrop-filter: blur(5px); }
+        
+        .btn-small {
+            padding: 5px 10px; border-radius: 15px; border: 1px solid #555;
+            background: rgba(255,255,255,0.1); color: #ccc; font-size: 0.8rem; cursor: pointer;
+        }
         
         /* 錯誤提示框 */
         #error-overlay {
@@ -208,12 +214,14 @@
             color: #ff4d4d; padding: 20px; text-align: center;
         }
 
-        /* 其他原有樣式保留但簡化 */
-        .section-label { color: var(--primary-neon); font-size: 1rem; font-weight: bold; margin: 5px 0; }
+        /* 其他原有樣式保留 */
+        .section-label { color: var(--primary-neon); font-size: 1rem; font-weight: bold; margin: 8px 0 5px 0; }
         .bank-selector { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; flex-shrink: 0; }
         .bank-btn { flex: 1; min-width: 80px; height: 50px; background: rgba(255,255,255,0.1); border: 1px solid #555; color: white; border-radius: 10px; }
         .bank-btn.selected { background: var(--primary-neon); color: black; }
-        .mode-container { display: flex; flex-direction: column; gap: 10px; flex: 1; overflow-y: auto; min-height: 0; }
+        
+        /* Mode container 不再負責滾動，由外層 scrollable-content 負責 */
+        .mode-container { display: flex; flex-direction: column; gap: 10px; }
         .mode-row { display: flex; gap: 10px; flex-shrink: 0; }
         .mode-btn { flex: 1; height: 50px; background: rgba(255,255,255,0.1); border-radius: 10px; color: #ccc; border:1px solid #555; }
         .mode-btn.selected { background: var(--accent-neon); color: black; font-weight: bold; }
@@ -237,16 +245,28 @@
         /* 歷史紀錄 */
         #history-list { overflow-y: auto; flex: 1; }
         .hist-row { display: grid; grid-template-columns: 1fr 80px 1fr; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; color: white; font-size: 0.9rem; }
+        
+        /* 狀態指示燈 */
+        .storage-indicator {
+            position: absolute; top: 10px; right: 10px; width: 10px; height: 10px; border-radius: 50%;
+            z-index: 100;
+        }
+        .storage-ok { background: #2ecc71; box-shadow: 0 0 5px #2ecc71; }
+        .storage-warn { background: #f1c40f; box-shadow: 0 0 5px #f1c40f; }
 
     </style>
 </head>
 <body>
+
+<div id="storage-status" class="storage-indicator storage-warn" title="存檔狀態"></div>
 
 <div id="error-overlay">
     <h2>⚠️ 系統錯誤</h2>
     <p id="error-msg">初始化失敗</p>
     <button class="btn-thick" style="background:#fff; color:#000; width:200px; margin-top:20px;" onclick="location.reload()">重新整理</button>
 </div>
+
+<input type="file" id="file-input" style="display:none" accept=".json" onchange="APP.importData(this)">
 
 <div id="app-container">
     
@@ -259,7 +279,7 @@
             <div class="game-slogan">🏆 手速即分數</div>
         </div>
         
-        <div class="leaderboard-scroll-area">
+        <div class="scrollable-content">
             <div class="leaderboard-grid" id="leaderboard-grid">
                 <div style="color:white; grid-column:span 2; text-align:center; padding:20px;">載入中...</div>
             </div>
@@ -272,28 +292,40 @@
 
     <div id="screen-input" class="screen">
         <h2 style="color:var(--primary-neon); margin:5px 0; text-align:center;">挑戰者設定</h2>
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label style="color:#aaa; font-size:0.9rem;">學校</label><input type="text" id="input-school" class="input-field"></div>
-            <div style="flex:1;"><label style="color:#aaa; font-size:0.9rem;">暱稱</label><input type="text" id="input-name" class="input-field" maxlength="5"></div>
-        </div>
-        <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15); margin:10px 0;">
         
-        <div class="section-label">選擇題組</div>
-        <div class="bank-selector" id="bank-btn-group"></div>
-
-        <div class="mode-container">
-            <div class="section-label">單人模式</div>
-            <div class="mode-row">
-                <button class="mode-btn selected" id="m-std" onclick="APP.selectMode('standard')">標準競速</button>
-                <button class="mode-btn" id="m-surv" onclick="APP.selectMode('survival')">生存模式</button>
+        <div class="scrollable-content">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <div style="flex:1;"><label style="color:#aaa; font-size:0.9rem;">學校</label><input type="text" id="input-school" class="input-field"></div>
+                <div style="flex:1;"><label style="color:#aaa; font-size:0.9rem;">暱稱</label><input type="text" id="input-name" class="input-field" maxlength="5"></div>
             </div>
-            <div class="section-label">多人競賽</div>
-            <div class="mode-row">
-                <button class="mode-btn" id="m-f1" onclick="APP.selectMode('f1')">F1 積分賽</button>
-                <button class="mode-btn" id="m-tour" onclick="APP.selectMode('tournament')">錦標賽</button>
+            
+            <div class="section-label" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>資料保險箱</span>
+                <div>
+                    <button class="btn-small" onclick="APP.exportData()">匯出備份</button>
+                    <button class="btn-small" onclick="document.getElementById('file-input').click()">匯入還原</button>
+                </div>
+            </div>
+            <hr style="border:0; border-top:1px solid rgba(255,255,255,0.15); margin:10px 0;">
+
+            <div class="section-label">選擇題組</div>
+            <div class="bank-selector" id="bank-btn-group"></div>
+
+            <div class="mode-container">
+                <div class="section-label">單人模式</div>
+                <div class="mode-row">
+                    <button class="mode-btn selected" id="m-std" onclick="APP.selectMode('standard')">標準競速</button>
+                    <button class="mode-btn" id="m-surv" onclick="APP.selectMode('survival')">生存模式</button>
+                </div>
+                <div class="section-label">多人競賽</div>
+                <div class="mode-row">
+                    <button class="mode-btn" id="m-f1" onclick="APP.selectMode('f1')">F1 積分賽</button>
+                    <button class="mode-btn" id="m-tour" onclick="APP.selectMode('tournament')">錦標賽</button>
+                </div>
             </div>
         </div>
-        <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px; flex-shrink:0;">
+
+        <div class="footer-action" style="flex-direction:column; gap:10px;">
             <button class="btn-thick btn-start" onclick="GAME.startPre()">進入遊戲</button>
             <button class="btn-thick btn-back" onclick="APP.navTo('lobby')">返回首頁</button>
         </div>
@@ -324,9 +356,9 @@
 
     <div id="screen-f1-setup" class="screen f1-theme">
         <h1 class="f1-title">🏎️ F1 積分大獎賽</h1>
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-            <div class="section-label">參賽人數: <span id="disp-f1-players" style="color:white; font-size:1.5rem;">4</span></div>
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <div class="scrollable-content" style="display:flex; flex-direction:column; justify-content:center;">
+            <div class="section-label" style="text-align:center;">參賽人數: <span id="disp-f1-players" style="color:white; font-size:1.5rem;">4</span></div>
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
                 <button class="btn-thick btn-back" style="width:50px;" onclick="F1.adjustPlayers(-1)">-</button>
                 <button class="btn-thick btn-back" style="width:50px;" onclick="F1.adjustPlayers(1)">+</button>
             </div>
@@ -334,7 +366,7 @@
             <select id="sel-r2" style="margin-bottom:10px; padding:10px; width:100%;"></select>
             <select id="sel-r3" style="margin-bottom:10px; padding:10px; width:100%;"></select>
         </div>
-        <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="footer-action" style="flex-direction:column; gap:10px;">
             <button class="btn-thick" style="background:var(--f1-red); color:white;" onclick="F1.createRace()">建立賽事</button>
             <button class="btn-thick btn-back" onclick="APP.navTo('input')">返回</button>
         </div>
@@ -355,13 +387,15 @@
 
     <div id="screen-f1-round-result" class="screen f1-theme">
         <h2 id="rr-title" style="color:var(--primary-neon); text-align:center;">結算</h2>
-        <div style="flex:1; overflow-y:auto;">
+        <div class="scrollable-content">
             <table class="rank-table">
                 <thead><tr><th>#</th><th>選手</th><th>成績</th><th>積分</th></tr></thead>
                 <tbody id="rr-tbody"></tbody>
             </table>
         </div>
-        <button class="btn-thick btn-start" id="btn-next-round" style="margin-top:10px;" onclick="F1.nextRound()">下一輪</button>
+        <div class="footer-action">
+            <button class="btn-thick btn-start" id="btn-next-round" style="margin-top:10px;" onclick="F1.nextRound()">下一輪</button>
+        </div>
     </div>
 
     <div id="screen-f1-podium" class="screen f1-theme">
@@ -369,31 +403,38 @@
         <div style="flex:1; display:flex; justify-content:center; align-items:center;">
             <div class="podium" id="podium-area"></div>
         </div>
-        <button class="btn-thick btn-back" onclick="location.reload()">回首頁</button>
+        <div class="footer-action">
+            <button class="btn-thick btn-back" onclick="location.reload()">回首頁</button>
+        </div>
     </div>
 
     <div id="screen-history" class="screen">
         <h3 id="hist-title" style="color:var(--primary-neon); text-align:center;">歷史紀錄</h3>
         <div id="history-list"></div>
-        <button class="btn-thick btn-back" style="margin-top:10px;" onclick="APP.navTo('lobby')">返回</button>
+        <div class="footer-action">
+            <button class="btn-thick btn-back" style="margin-top:10px;" onclick="APP.navTo('lobby')">返回</button>
+        </div>
     </div>
 
 </div>
 
 <script>
-    // V13-1: SafeStorage Module (解決無痕模式/Line瀏覽器當機問題)
+    // V13-2: SafeStorage + 匯出/匯入系統
     const SafeStorage = {
         _data: {},
         isAvailable: false,
         init: function() {
+            const ind = document.getElementById('storage-status');
             try {
                 localStorage.setItem('test', '1');
                 localStorage.removeItem('test');
                 this.isAvailable = true;
                 console.log("Storage: LocalStorage is available.");
+                if(ind) { ind.className = 'storage-indicator storage-ok'; ind.title = "已啟用永久存檔"; }
             } catch (e) {
                 console.warn("Storage: LocalStorage failed, using memory fallback.");
                 this.isAvailable = false;
+                if(ind) { ind.className = 'storage-indicator storage-warn'; ind.title = "暫存模式(關閉後消失)"; }
             }
         },
         getItem: function(key) {
@@ -408,7 +449,6 @@
         }
     };
 
-    // 資料庫
     const DEFAULT_DATA = {
         banks: [
             { id: "b1", title: "常見週期表", pairs: [ {q:"H", a:"氫"}, {q:"Li", a:"鋰"}, {q:"Na", a:"鈉"}, {q:"K", a:"鉀"}, {q:"Rb", a:"銣"}, {q:"Cs", a:"銫"}, {q:"Be", a:"鈹"}, {q:"Mg", a:"鎂"}, {q:"Ca", a:"鈣"}, {q:"Sr", a:"鍶"}, {q:"Ba", a:"鋇"}, {q:"Ti", a:"鈦"}, {q:"Cr", a:"鉻"}, {q:"Mn", a:"錳"}, {q:"Fe", a:"鐵"}, {q:"Co", a:"鈷"}, {q:"Ni", a:"鎳"}, {q:"Cu", a:"銅"}, {q:"Zn", a:"鋅"}, {q:"B", a:"硼"}, {q:"Al", a:"鋁"}, {q:"C", a:"碳"}, {q:"Si", a:"矽"}, {q:"N", a:"氮"}, {q:"P", a:"磷"}, {q:"O", a:"氧"}, {q:"S", a:"硫"}, {q:"F", a:"氟"}, {q:"Cl", a:"氯"}, {q:"Br", a:"溴"}, {q:"I", a:"碘"}, {q:"He", a:"氦"}, {q:"Ne", a:"氖"}, {q:"Ar", a:"氬"}, {q:"Ag", a:"銀"}, {q:"Au", a:"金"}, {q:"Hg", a:"汞"}, {q:"Pb", a:"鉛"}, {q:"U", a:"鈾"} ] },
@@ -420,7 +460,6 @@
     let APP_DATA = JSON.parse(JSON.stringify(DEFAULT_DATA));
     const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 
-    // APP 核心
     const APP = {
         state: {
             history: [],
@@ -450,6 +489,43 @@
                 document.getElementById('error-overlay').style.display = 'flex';
                 document.getElementById('error-msg').innerText = "啟動錯誤：" + e.message;
             }
+        },
+
+        // V13-2 新增：資料匯出
+        exportData: function() {
+            const dataStr = JSON.stringify(APP.state.history);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            let exportFileDefaultName = 'cheng_nature_save.json';
+            
+            let linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        },
+
+        // V13-2 新增：資料匯入
+        importData: function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if(Array.isArray(imported)) {
+                            APP.state.history = imported;
+                            SafeStorage.setItem('cheng_nature_game_log_v2', JSON.stringify(imported));
+                            alert("匯入成功！紀錄已更新。");
+                            APP.updateLeaderboardV11();
+                        } else {
+                            alert("格式錯誤：檔案內容不正確。");
+                        }
+                    } catch(err) {
+                        alert("匯入失敗：檔案損毀或格式錯誤。");
+                    }
+                };
+                reader.readAsText(input.files[0]);
+            }
+            input.value = ""; // 重置，允許重複選同一檔
         },
 
         navTo: function(screenId, filterStr = null) {
@@ -509,20 +585,17 @@
                 const box = document.createElement('div');
                 box.className = 'mode-box';
                 
-                // Header
                 const header = document.createElement('div');
                 header.className = 'mode-header';
                 header.innerText = block.name;
                 box.appendChild(header);
 
                 if (block.type.startsWith('active')) {
-                    // Click handler
                     box.onclick = () => {
                         let filterStr = (block.id === 'f1') ? "f1" : `${block.id}:${APP.state.leaderboardTabs[block.id] || 'b1'}`;
                         APP.navTo('history', filterStr);
                     };
 
-                    // Tabs (Only for normal modes)
                     if (block.type === 'active') {
                         const tabContainer = document.createElement('div');
                         tabContainer.className = 'mini-tabs';
@@ -543,7 +616,6 @@
                         box.appendChild(tabContainer);
                     }
 
-                    // Content
                     const listContainer = document.createElement('div');
                     listContainer.className = 'tower-list';
                     
@@ -882,7 +954,6 @@
             }
         },
         calcResults: function() {
-            // 計算積分
             let list = [...F1.players];
             list.sort((a,b) => a.times[F1.roundIdx] - b.times[F1.roundIdx]);
             list.forEach((p, rank) => {
@@ -891,7 +962,6 @@
                 p.totalPts += pts;
             });
             
-            // 顯示表格
             const tbody = document.getElementById('rr-tbody');
             tbody.innerHTML = "";
             let dispList = [...F1.players];
@@ -931,7 +1001,6 @@
                     div.innerHTML += `<div>${p.name}<br><small>${p.totalPts}pt</small></div>`;
                     area.appendChild(div);
                     
-                    // Save F1 Record
                     APP.saveRecord({
                         player: p.name, mode: 'f1', bankId: 'f1-mix',
                         time: p.times.reduce((u,v)=>u+v), score: p.totalPts, errors: 0
