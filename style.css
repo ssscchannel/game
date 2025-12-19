@@ -42,17 +42,17 @@ html {
     width: 100%; height: 100%;
     
     /* 這裡直接設定背景，瀏覽器會強制填滿所有「彈性滾動」與「安全區域」 */
-    background: var(--app-bg-gradient); 
-    background-image: url('page.jpg'), var(--app-bg-gradient);
-    background-size: cover; 
-    background-position: center; 
-    background-attachment: fixed; /* 鎖定背景不隨捲動 */
-    background-blend-mode: overlay;
+    
 }
 
 body {
     margin: 0; padding: 0;
-    background-color: transparent; /* body 設為透明，讓 html 背景透出來 */
+	background: var(--app-bg-gradient);
+	background-image: url('page.jpg'), var(--app-bg-gradient);
+    background-size: cover; 
+    background-position: center; 
+    background-attachment: fixed; /* 鎖定背景不隨捲動 */
+    background-blend-mode: overlay;
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
