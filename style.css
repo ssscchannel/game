@@ -1,11 +1,12 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P3 樣式表
- * 基於 V14-P2 優化：
- * 1. 背景圖移至 Body 層級 (解決 iPhone 底部黑邊)
- * 2. 品牌 Logo 區塊美化 (毛玻璃質感)
- * 3. 包含 V14-P2 所有特效 (Glitch, Start Button)
+/* * 晟自然輔助系統 - 遊戲室 V14-P4 樣式表
+ * 修正重點：
+ * 1. 使用 body::before 建立「獨立背景層」，強制覆蓋底部安全區域
+ * 2. 確保藍色漸層 (Overlay) 完美應用於全螢幕
+ * 3. 包含所有 V14-P3 的美化效果 (毛玻璃、Glitch、按鈕)
  */
 
 :root {
+    /* 核心變數 */
     --bg-deep: #000000;
     --app-bg-gradient: linear-gradient(to bottom, #141e30, #243b55);
     
@@ -36,7 +37,8 @@
 
 html, body {
     margin: 0; padding: 0;
-    background-color: #000000; /* 確保底層黑色 */
+    /* 底色設為黑色，避免載入瞬間閃白 */
+    background-color: #000000; 
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; 
@@ -48,14 +50,28 @@ html, body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-main);
     touch-action: none; 
+}
+
+/* V14-P4 關鍵修正：獨立背景層 
+   這會創造一個永遠固定在視窗後方的層，確保藍色濾鏡覆蓋到底部 
+*/
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; /* 放在最底層 */
     
-    /* V14-P3: 將背景設定移至 body，解決 iPhone 底部黑邊問題 */
+    /* 這裡設定您的藍色漸層與圖片 */
     background: var(--app-bg-gradient); 
     background-image: url('page.jpg'), var(--app-bg-gradient);
     background-size: cover; 
     background-position: center; 
-    background-attachment: fixed; 
+    
+    /* 確保濾鏡混合模式生效 */
     background-blend-mode: overlay;
+    
+    /* 防止有些手機無視固定定位 */
+    transform: translateZ(0);
 }
 
 * {
@@ -73,12 +89,15 @@ html, body {
     margin: 0 auto;
     position: relative; display: flex; flex-direction: column; overflow: hidden;
     
-    /* V14-P3: 這裡改為透明，讓下方 body 的背景透出來 */
+    /* 背景透明，讓 body::before 透出來 */
     background: transparent;
     
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
     padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
     box-sizing: border-box;
+    
+    /* 確保內容層級高於背景層 */
+    z-index: 1;
 }
 
 @keyframes alarm-flash {
@@ -98,7 +117,7 @@ html, body {
         box-shadow: 0 0 50px rgba(0, 210, 255, 0.15);
         top: 50%; transform: translateY(-50%);
         padding-top: 20px; padding-bottom: 20px;
-        /* 電腦版回復容器背景，避免全螢幕太花 */
+        /* 電腦版給容器一個深色背景，避免太亮 */
         background: rgba(0,0,0,0.8); 
         backdrop-filter: blur(10px);
     }
@@ -167,7 +186,7 @@ html, body {
     width: 20px; height: 20px; fill: white;
 }
 
-/* --- 大廳 (Lobby) & V14-P3 新版品牌區 --- */
+/* --- 大廳 (Lobby) --- */
 .header-section {
     margin-top: 15px; 
     margin-bottom: 25px;
@@ -175,18 +194,16 @@ html, body {
     flex-shrink: 0;
 }
 
+/* 品牌區塊 - 毛玻璃風格 */
 .brand-row {
     display: flex; align-items: center; justify-content: center;
     gap: 12px; margin-bottom: 20px;
-    
-    /* V14-P3: 品牌區塊美化 - 高級毛玻璃質感 */
     background: rgba(30, 40, 50, 0.65); 
     backdrop-filter: blur(15px) saturate(120%); 
     padding: 10px 25px;
     border-radius: 30px; 
     border: 1px solid rgba(255,255,255,0.15); 
     box-shadow: 0 8px 20px rgba(0,0,0,0.2); 
-    
     cursor: pointer; z-index: 9999;
     transition: all 0.3s ease;
 }
@@ -221,14 +238,13 @@ html, body {
     0% { transform: rotate(0deg) scale(1); }
     100% { transform: rotate(-15deg) scale(1.15) translateY(2px); }
 }
-/* 右手反向旋轉 */
 .right-hand { animation-name: tap-frenzy-r; }
 @keyframes tap-frenzy-r {
     0% { transform: rotate(0deg) scale(1); }
     100% { transform: rotate(15deg) scale(1.15) translateY(2px); }
 }
 
-/* Glitch Title Styles */
+/* Glitch Title */
 .glitch-wrapper {
     position: relative;
     display: inline-block;
@@ -280,7 +296,7 @@ html, body {
     100% { clip-path: inset(5% 0 80% 0); }
 }
 
-/* --- Leaderboard V14-P2: 增加高度與間距 --- */
+/* Leaderboard */
 .leaderboard-container {
     display: grid; 
     grid-template-columns: 1fr 1fr; 
@@ -355,7 +371,7 @@ html, body {
     width: 100%; display: flex; justify-content: center;
 }
 
-/* V14-P2: 升級版 Start 按鈕 */
+/* Start Button */
 .start-btn {
     width: 85%; max-width: 320px;
     height: 70px;
