@@ -1,12 +1,14 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P9 (真・滿版修正)
+/* * 晟自然輔助系統 - 遊戲室 V14-P3 (沉浸式暗房修正版)
  * 修正重點：
- * 1. 使用「中心輻射法」強迫背景圖延伸至所有邊界外
- * 2. 徹底解決 iOS 底部出現白條或黑條的問題
- * 3. 暫時凍結品牌樣式調整 (維持現狀)
+ * 1. [Failsafe] html/body 底色強制設為深藍，徹底消除白邊/黑邊視覺落差。
+ * 2. [Lock] overscroll-behavior 禁止 iOS 橡皮筋迴彈。
+ * 3. [Background] 背景圖改為延伸覆蓋 (Inset Negative) 策略。
  */
 
 :root {
-    --bg-deep: #141e30; /* 改為深藍色，萬一露底也是藍色 */
+    /* 核心底色：萬一圖片沒蓋到的地方，顯示這個顏色 */
+    --bg-core: #141e30; 
+    
     --app-bg-gradient: linear-gradient(to bottom, #141e30, #243b55);
     
     --glass-bg: rgba(255, 255, 255, 0.1);
@@ -28,55 +30,56 @@
     --input-height: 50px;
     --btn-height: 60px;
     
-    /* 按鈕安全距離：維持緊貼底部 */
-    --viewer-safe-top: 60px;
-    --viewer-safe-bottom: 10px;
+    /* 安全距離設定 */
+    --viewer-safe-top: env(safe-area-inset-top, 20px);
+    --viewer-safe-bottom: env(safe-area-inset-bottom, 20px);
     
     --nav-height: 50px;
 }
 
-/* V14-P9 修正：根標籤底色設為深藍漸層 (雙重保險) */
+/* V14-P3 核心修正：根層級鎖定 */
 html {
-    background: var(--app-bg-gradient); 
-    width: 100%; height: 100%;
+    background-color: var(--bg-core); /* 這裡設定深色，白邊再見 */
+    width: 100%;
+    height: 100%;
+    /* 禁止橡皮筋迴彈，這行是消除底部露白的關鍵 */
+    overscroll-behavior: none; 
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
     margin: 0; padding: 0;
-    background-color: transparent; /* 讓下方的 global-bg 透出來 */
-    width: 100%; height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
-    -webkit-user-select: none; user-select: none;
+    background-color: var(--bg-core); /* 雙重保險 */
+    width: 100%; 
+    height: 100%;
+    overflow: hidden; /* 禁止 Body 捲動，只允許內部容器捲動 */
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-main);
-    touch-action: none; 
+    touch-action: none; /* 禁止瀏覽器預設觸控行為 */
 }
 
-/* V14-P9 核心修正：中心輻射定位法 */
+/* V14-P3 背景圖修正：暴力延伸法 */
 #global-bg {
     position: fixed;
-    /* 1. 定位在螢幕正中心 */
-    top: 50%; 
-    left: 50%; 
-    
-    /* 2. 讓尺寸比螢幕大 20% (上下左右各多出 10%) */
-    width: 120vw; 
-    height: 120vh; 
-    
-    /* 3. 校正回正，確保圖片中心對準螢幕中心 */
-    transform: translate(-50%, -50%) translateZ(0); 
-    
+    /* 上下左右各往外延伸 10%，確保網址列伸縮時不會露出邊界 */
+    top: -10vh;
+    left: -10vw;
+    width: 120vw;
+    height: 120vh;
     z-index: -999;
     
     /* 背景設定 */
-    background: var(--app-bg-gradient); 
+    background-color: var(--bg-core);
     background-image: url('page.jpg'), var(--app-bg-gradient);
     background-size: cover; 
     background-position: center; 
-    background-blend-mode: overlay;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay; /* 讓圖片融入底色 */
     
     pointer-events: none;
+    /* 避免 iOS Safari 在渲染固定背景時的抖動 */
+    transform: translateZ(0); 
+    will-change: transform;
 }
 
 * {
@@ -87,18 +90,18 @@ body {
     display: none; 
 }
 
+/* 應用程式主容器：改用 dvh 適應動態高度 */
 #app-container {
     width: 100%; 
-    height: 100dvh; 
+    height: 100dvh; /* Dynamic Viewport Height: 自動扣除網址列高度 */
     max-width: 480px; 
     margin: 0 auto;
     position: relative; 
     display: flex; flex-direction: column; overflow: hidden;
     background: transparent;
     
-    /* 確保按鈕不會被瀏海或橫條遮住，但背景圖會延伸出去 */
-    padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
-    padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
+    padding-top: max(60px, var(--viewer-safe-top));
+    padding-bottom: max(10px, var(--viewer-safe-bottom));
     box-sizing: border-box;
 }
 
@@ -111,24 +114,29 @@ body {
     border: 1px solid rgba(255, 0, 0, 0.5) !important;
 }
 
+/* 電腦版樣式維持不變，僅微調高度邏輯 */
 @media (min-width: 481px) {
     #app-container { 
         height: 95vh; max-height: 900px;
         border-radius: 30px; 
         border: 1px solid #333;
         box-shadow: 0 0 50px rgba(0, 210, 255, 0.15);
-        top: 50%; transform: translateY(-50%);
+        top: 50%; 
+        left: 50%;
+        transform: translate(-50%, -50%);
         padding-top: 20px; padding-bottom: 20px;
         background: rgba(0,0,0,0.6); 
         backdrop-filter: blur(5px);
+        margin: 0; /* 清除 auto margin 因為用了 absolute positioning */
+        position: absolute;
     }
 }
 
 .screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     padding: 0 15px 15px 15px;
-    padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
-    padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
+    padding-top: max(60px, var(--viewer-safe-top));
+    padding-bottom: max(10px, var(--viewer-safe-bottom));
     box-sizing: border-box;
     
     display: flex; flex-direction: column;
@@ -176,7 +184,6 @@ body {
     flex-shrink: 0;
 }
 
-/* 品牌樣式：維持目前版本 (Option B) */
 .brand-row {
     display: flex; align-items: center; justify-content: center;
     gap: 12px; margin-bottom: 20px;
@@ -196,7 +203,6 @@ body {
     text-shadow: 0 2px 4px rgba(0,0,0,0.6); letter-spacing: 1.5px; pointer-events: none;
 }
 
-/* Glitch & Other Styles (不變) */
 .title-area { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; }
 .tap-hand { font-size: 2.5rem; animation: tap-frenzy 0.15s infinite alternate; }
 .left-hand { transform-origin: right center; animation-delay: 0s; }
