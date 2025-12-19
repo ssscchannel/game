@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>晟自然遊戲室 V14-P1</title>
+    <title>晟自然遊戲室 V14-P2</title>
     
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#2c3e50">
@@ -24,7 +24,14 @@
                     <img src="logo.jpg" class="logo-img" alt="Logo">
                     <span class="system-title">晟自然輔助系統</span>
                 </div>
-                <h1 class="game-slogan">極速遊戲室</h1>
+                
+                <div class="title-area">
+                    <span class="tap-hand left-hand">👉</span>
+                    <div class="glitch-wrapper">
+                        <h1 class="game-slogan" data-text="手速即分數">手速即分數</h1>
+                    </div>
+                    <span class="tap-hand right-hand">👈</span>
+                </div>
             </div>
 
             <div class="leaderboard-container" id="leaderboard-grid">
@@ -32,7 +39,10 @@
             </div>
 
             <div class="footer-action">
-                <button class="start-btn" onclick="APP.navTo('input')">START</button>
+                <button class="start-btn" onclick="APP.navTo('input')">
+                    <span class="btn-glow"></span>
+                    <span class="btn-text">START GAME</span>
+                </button>
             </div>
         </div>
 

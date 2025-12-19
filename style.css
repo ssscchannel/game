@@ -1,5 +1,8 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P1 樣式表
- * 基於 V14-Q3 優化：加入 env() 安全區域設定
+/* * 晟自然輔助系統 - 遊戲室 V14-P2 樣式表
+ * 基於 V14-P1 優化：
+ * 1. iPhone 16 Pro Max 滿版修正 (100dvh)
+ * 2. Glitch 標題與手速動畫
+ * 3. Start 按鈕美化
  */
 
 :root {
@@ -25,20 +28,22 @@
     --input-height: 50px;
     --btn-height: 60px;
     
-    /* V14-1: 原始安全距離設定 */
     --viewer-safe-top: 60px;
     --viewer-safe-bottom: 40px;
     
-    /* V14-Q2: 導覽列高度 */
     --nav-height: 50px;
 }
 
 html, body {
     margin: 0; padding: 0;
-    background-color: var(--bg-deep);
+    /* V14-P2: 將底色設為深藍色，避免下拉時出現黑邊 */
+    background-color: #141e30;
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
-    width: 100%; height: 100%; 
+    width: 100%; 
+    /* V14-P2: 使用 100dvh 解決 iOS Safari 網址列縮放問題 */
+    height: 100dvh; 
+    min-height: 100vh;
     overflow: hidden;
     overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
@@ -56,17 +61,21 @@ html, body {
 }
 
 #app-container {
-    width: 100%; height: 100%; 
+    width: 100%; 
+    /* V14-P2: 強制填滿視窗高度 */
+    height: 100dvh; 
     max-width: 480px; 
     margin: 0 auto;
     position: relative; display: flex; flex-direction: column; overflow: hidden;
+    
+    /* V14-P2: 背景固定，避免滾動穿幫 */
     background: var(--app-bg-gradient); 
     background-image: url('page.jpg'), var(--app-bg-gradient);
     background-size: cover; 
     background-position: center; 
+    background-attachment: fixed; 
     background-blend-mode: overlay;
     
-    /* PWA 優化：適配 iPhone 瀏海與底部橫條 */
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
     padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
     box-sizing: border-box;
@@ -90,13 +99,12 @@ html, body {
         top: 50%; transform: translateY(-50%);
         padding-top: 20px; padding-bottom: 20px;
     }
-    body { position: relative; } 
+    body { position: relative; background: #000;} 
 }
 
 .screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     padding: 0 15px 15px 15px;
-    /* 配合 PWA 優化調整內部 Padding */
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
     padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
     box-sizing: border-box;
@@ -156,51 +164,121 @@ html, body {
     width: 20px; height: 20px; fill: white;
 }
 
-/* --- 大廳 (Lobby) --- */
+/* --- 大廳 (Lobby) & V14-P2 新標題 --- */
 .header-section {
-    margin-top: 5px; margin-bottom: 5px;
+    /* V14-P2: 增加間距，解決擁擠感 */
+    margin-top: 15px; 
+    margin-bottom: 25px;
     display: flex; flex-direction: column; align-items: center;
     flex-shrink: 0;
 }
 
 .brand-row {
     display: flex; align-items: center; justify-content: center;
-    gap: 10px; margin-bottom: 5px;
+    gap: 10px; margin-bottom: 15px;
     background: rgba(0,0,0,0.3);
-    padding: 10px 20px;
+    padding: 8px 20px;
     border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.1);
     cursor: pointer; z-index: 9999; 
 }
-.logo-img { height: 32px; width: auto; pointer-events: none; }
+.logo-img { height: 28px; width: auto; pointer-events: none; }
 .system-title { 
-    font-size: 1.0rem; font-weight: bold; color: #ffffff; 
+    font-size: 0.9rem; font-weight: bold; color: #ffffff; 
     text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     letter-spacing: 1px; pointer-events: none;
 }
 
-.game-slogan {
-    font-size: 1.8rem; font-weight: 900; margin: 0;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(0, 210, 255, 0.8);
-    letter-spacing: 2px;
-    animation: breathe 3s infinite ease-in-out;
-    margin-bottom: 10px;
-}
-@keyframes breathe {
-    0%, 100% { transform: scale(1); filter: brightness(1); }
-    50% { transform: scale(1.02); filter: brightness(1.2); }
+.title-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
 }
 
+.tap-hand {
+    font-size: 2.5rem;
+    animation: tap-frenzy 0.15s infinite alternate;
+}
+.left-hand { transform-origin: right center; animation-delay: 0s; }
+.right-hand { transform-origin: left center; animation-delay: 0.07s; }
+
+@keyframes tap-frenzy {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(-15deg) scale(1.15) translateY(2px); }
+}
+/* 右手反向旋轉 */
+.right-hand { animation-name: tap-frenzy-r; }
+@keyframes tap-frenzy-r {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(15deg) scale(1.15) translateY(2px); }
+}
+
+/* V14-P2: Glitch Title Styles (from uploaded file) */
+.glitch-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.glitch-wrapper h1 {
+    font-size: 2.8rem; /* 稍微調整以適應手機 */
+    margin: 0;
+    line-height: 1.2;
+    font-weight: 900;
+    color: #fff;
+    position: relative;
+    letter-spacing: 2px;
+}
+.glitch-wrapper h1::before,
+.glitch-wrapper h1::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #141e30; /* 背景色配合 App 漸層深色，避免遮擋不全 */
+    opacity: 0.8;
+}
+.glitch-wrapper h1::before {
+    left: 2px;
+    text-shadow: -1px 0 #ff00c1;
+    clip-path: inset(44% 0 61% 0);
+    animation: glitch-anim-1 2s infinite linear alternate-reverse;
+}
+.glitch-wrapper h1::after {
+    left: -2px;
+    text-shadow: -1px 0 #00fff9;
+    clip-path: inset(50% 0 30% 0);
+    animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+    0% { clip-path: inset(20% 0 80% 0); }
+    20% { clip-path: inset(60% 0 10% 0); }
+    40% { clip-path: inset(40% 0 50% 0); }
+    60% { clip-path: inset(80% 0 5% 0); }
+    80% { clip-path: inset(10% 0 70% 0); }
+    100% { clip-path: inset(30% 0 20% 0); }
+}
+@keyframes glitch-anim-2 {
+    0% { clip-path: inset(10% 0 60% 0); }
+    20% { clip-path: inset(30% 0 10% 0); }
+    40% { clip-path: inset(70% 0 20% 0); }
+    60% { clip-path: inset(20% 0 50% 0); }
+    80% { clip-path: inset(50% 0 10% 0); }
+    100% { clip-path: inset(5% 0 80% 0); }
+}
+
+/* --- Leaderboard V14-P2: 增加高度與間距 --- */
 .leaderboard-container {
     display: grid; 
     grid-template-columns: 1fr 1fr; 
     grid-template-rows: 1fr 1fr;
-    gap: 8px; 
-    margin-bottom: 15px;
-    height: 400px; 
+    gap: 12px; /* 增加間隙 */
+    margin-bottom: 20px;
+    /* V14-P2: 對應長螢幕手機，使用 vh 單位 */
+    height: 55vh; 
+    max-height: 550px;
     flex-shrink: 1; 
-    min-height: 0;
+    min-height: 300px;
 }
 
 .mode-box {
@@ -265,20 +343,52 @@ html, body {
     width: 100%; display: flex; justify-content: center;
 }
 
+/* V14-P2: 升級版 Start 按鈕 */
 .start-btn {
-    width: 80%; max-width: 300px;
-    padding: 15px; border: none; border-radius: 50px;
-    background: linear-gradient(45deg, #00c6ff 0%, #0072ff 100%);
-    color: white; font-size: 1.5rem; font-weight: 900;
-    box-shadow: 0 0 20px rgba(0, 198, 255, 0.6); cursor: pointer;
-    animation: float-btn 3s ease-in-out infinite;
-    text-transform: uppercase; letter-spacing: 2px;
-    border: 2px solid rgba(255,255,255,0.2);
-    box-sizing: border-box;
+    width: 85%; max-width: 320px;
+    height: 70px;
+    padding: 0; border: none; border-radius: 35px;
+    background: transparent;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 198, 255, 0.4);
+    transition: transform 0.1s;
 }
-@keyframes float-btn {
-    0%, 100% { transform: translateY(0); box-shadow: 0 0 20px rgba(0, 198, 255, 0.6); }
-    50% { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 198, 255, 0.8); }
+.start-btn:active { transform: scale(0.96); }
+
+/* 按鈕背景與光暈 */
+.start-btn::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(90deg, #00c6ff, #0072ff);
+    z-index: 1; border-radius: 35px;
+}
+.start-btn::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 60%);
+    opacity: 0; transform: scale(0.5);
+    animation: btn-pulse 2s infinite;
+    z-index: 2;
+}
+@keyframes btn-pulse {
+    0% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 0.3; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+
+.btn-text {
+    position: relative; z-index: 3;
+    font-size: 1.8rem; font-weight: 900; color: white;
+    letter-spacing: 3px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    font-style: italic;
+}
+.btn-glow {
+    position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
+    border-radius: 33px;
+    border: 2px solid rgba(255,255,255,0.3);
+    z-index: 3;
+    pointer-events: none;
 }
 
 #screen-input { background: rgba(10, 10, 20, 0.95); color: white; display: flex; flex-direction: column; gap: 15px; }
