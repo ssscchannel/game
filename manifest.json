@@ -1,0 +1,22 @@
+{
+  "name": "晟自然遊戲室 V14-P1",
+  "short_name": "晟自然遊戲",
+  "description": "晟自然輔助系統　娛樂室",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#141e30",
+  "theme_color": "#2c3e50",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
