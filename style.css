@@ -1,14 +1,12 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P6 (終極版)
+/* * 晟自然輔助系統 - 遊戲室 V14-P7 樣式表
  * 修正重點：
- * 1. 移除 background-attachment: fixed (iOS 支援性問題核心)
- * 2. 使用 body::before 建立「超大背景層 (120%)」，暴力解決所有安全區域白邊/黑邊問題
- * 3. 確保按鈕位置緊貼安全區域上方
+ * 1. 使用 #global-bg 實體層取代 CSS background (解決 iOS/電腦顯示不一致)
+ * 2. 確保背景在手機上絕對滿版且不隨捲動
  */
 
 :root {
     --bg-deep: #000000;
-    /* 這裡定義藍色漸層，稍後直接使用 */
-    --app-overlay: linear-gradient(to bottom, rgba(20, 30, 48, 0.9), rgba(36, 59, 85, 0.9));
+    --app-bg-gradient: linear-gradient(to bottom, #141e30, #243b55);
     
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.15);
@@ -29,51 +27,43 @@
     --input-height: 50px;
     --btn-height: 60px;
     
-    /* V14-P6: 維持緊貼底部的設計 */
+    /* 安全距離設定 */
     --viewer-safe-top: 60px;
     --viewer-safe-bottom: 10px;
     
     --nav-height: 50px;
 }
 
-html {
-    margin: 0; padding: 0;
-    width: 100%; height: 100%;
-    background-color: #000000; /* 最底層保險色 */
+/* V14-P7: 新增 #global-bg 樣式
+   這是一個獨立的圖層，永遠固定在視窗最後方
+*/
+#global-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; /* 放在最底層 */
+    
+    /* 這裡設定背景圖與漸層 */
+    background: var(--app-bg-gradient); 
+    background-image: url('page.jpg'), var(--app-bg-gradient);
+    background-size: cover; 
+    background-position: center; 
+    background-blend-mode: overlay;
+    
+    /* 防止手機瀏覽器誤判尺寸，稍微放大一點點確保覆蓋 */
+    transform: scale(1.05); 
+    pointer-events: none;
 }
 
-body {
+html, body {
     margin: 0; padding: 0;
+    background-color: transparent; /* 設為透明，讓 global-bg 透出來 */
     width: 100%; height: 100%;
-    position: fixed; /* 鎖定 body 禁止彈性滾動 */
     overflow: hidden;
+    overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-main);
-    touch-action: none;
-    background: transparent; /* 確保透明，讓下方的偽元素透出來 */
-}
-
-/* V14-P6 核心修正：超大背景層 
-   不使用 background-attachment: fixed，而是讓這個層本身 fixed 且比螢幕還大
-*/
-body::before {
-    content: "";
-    position: fixed;
-    /* 讓背景比螢幕大 10%，上下左右各延伸出去，確保絕對覆蓋 */
-    top: -10%; left: -10%; 
-    width: 120%; height: 120%;
-    z-index: -999; /* 最底層 */
-    
-    /* 直接將漸層疊在圖片上 */
-    background-image: var(--app-overlay), url('page.jpg');
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    
-    /* 這一行確保 iOS 不會誤判圖層邊界 */
-    transform: translate3d(0,0,0); 
-    pointer-events: none;
+    touch-action: none; 
 }
 
 * {
@@ -91,16 +81,14 @@ body::before {
     margin: 0 auto;
     position: relative; 
     display: flex; flex-direction: column; overflow: hidden;
+    
+    /* V14-P7: 這裡必須透明，因為背景已經移到 global-bg 了 */
     background: transparent;
     
-    /* 頂部避開瀏海 */
+    /* PWA 優化：適配 iPhone 瀏海與底部橫條 */
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
-    
-    /* 底部避開橫條，按鈕會停在這裡 */
     padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
-    
     box-sizing: border-box;
-    z-index: 1;
 }
 
 @keyframes alarm-flash {
@@ -120,19 +108,17 @@ body::before {
         box-shadow: 0 0 50px rgba(0, 210, 255, 0.15);
         top: 50%; transform: translateY(-50%);
         padding-top: 20px; padding-bottom: 20px;
-        background: rgba(0,0,0,0.8); 
-        backdrop-filter: blur(10px);
+        /* 電腦版給容器一個深色背景，避免太亮 */
+        background: rgba(0,0,0,0.6); 
+        backdrop-filter: blur(5px);
     }
 }
 
 .screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    padding: 0 15px 0 15px; 
-    
-    /* 內部 padding 也需配合安全區域，避免滾動內容被切掉 */
+    padding: 0 15px 15px 15px;
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
-    padding-bottom: 0; 
-    
+    padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
     box-sizing: border-box;
     
     display: flex; flex-direction: column;
@@ -192,13 +178,12 @@ body::before {
 
 /* --- 大廳 (Lobby) --- */
 .header-section {
-    margin-top: 15px; 
-    margin-bottom: 25px;
+    margin-top: 15px; margin-bottom: 25px;
     display: flex; flex-direction: column; align-items: center;
     flex-shrink: 0;
 }
 
-/* 品牌區塊 */
+/* V14-P3: 品牌區塊美化 - 高級毛玻璃質感 */
 .brand-row {
     display: flex; align-items: center; justify-content: center;
     gap: 12px; margin-bottom: 20px;
@@ -215,7 +200,6 @@ body::before {
     transform: scale(0.98);
     background: rgba(30, 40, 50, 0.8);
 }
-
 .logo-img { height: 32px; width: auto; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 .system-title { 
     font-size: 1rem; font-weight: bold; color: #ffffff; 
@@ -223,14 +207,10 @@ body::before {
     letter-spacing: 1.5px; pointer-events: none;
 }
 
+/* Glitch Title Effects */
 .title-area {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
 }
-
 .tap-hand {
     font-size: 2.5rem;
     animation: tap-frenzy 0.15s infinite alternate;
@@ -248,59 +228,26 @@ body::before {
     100% { transform: rotate(15deg) scale(1.15) translateY(2px); }
 }
 
-/* Glitch Title */
-.glitch-wrapper {
-    position: relative;
-    display: inline-block;
-}
+.glitch-wrapper { position: relative; display: inline-block; }
 .glitch-wrapper h1 {
-    font-size: 2.8rem;
-    margin: 0;
-    line-height: 1.2;
-    font-weight: 900;
-    color: #fff;
-    position: relative;
-    letter-spacing: 2px;
+    font-size: 2.8rem; margin: 0; line-height: 1.2; font-weight: 900; color: #fff; position: relative; letter-spacing: 2px;
 }
-.glitch-wrapper h1::before,
-.glitch-wrapper h1::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: #141e30; 
-    opacity: 0.8;
+.glitch-wrapper h1::before, .glitch-wrapper h1::after {
+    content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #141e30; opacity: 0.8;
 }
 .glitch-wrapper h1::before {
-    left: 2px;
-    text-shadow: -1px 0 #ff00c1;
-    clip-path: inset(44% 0 61% 0);
-    animation: glitch-anim-1 2s infinite linear alternate-reverse;
+    left: 2px; text-shadow: -1px 0 #ff00c1; clip-path: inset(44% 0 61% 0); animation: glitch-anim-1 2s infinite linear alternate-reverse;
 }
 .glitch-wrapper h1::after {
-    left: -2px;
-    text-shadow: -1px 0 #00fff9;
-    clip-path: inset(50% 0 30% 0);
-    animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
+    left: -2px; text-shadow: -1px 0 #00fff9; clip-path: inset(50% 0 30% 0); animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
 }
-
 @keyframes glitch-anim-1 {
-    0% { clip-path: inset(20% 0 80% 0); }
-    20% { clip-path: inset(60% 0 10% 0); }
-    40% { clip-path: inset(40% 0 50% 0); }
-    60% { clip-path: inset(80% 0 5% 0); }
-    80% { clip-path: inset(10% 0 70% 0); }
-    100% { clip-path: inset(30% 0 20% 0); }
+    0% { clip-path: inset(20% 0 80% 0); } 100% { clip-path: inset(30% 0 20% 0); }
 }
 @keyframes glitch-anim-2 {
-    0% { clip-path: inset(10% 0 60% 0); }
-    20% { clip-path: inset(30% 0 10% 0); }
-    40% { clip-path: inset(70% 0 20% 0); }
-    60% { clip-path: inset(20% 0 50% 0); }
-    80% { clip-path: inset(50% 0 10% 0); }
-    100% { clip-path: inset(5% 0 80% 0); }
+    0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(5% 0 80% 0); }
 }
 
-/* Leaderboard */
 .leaderboard-container {
     display: grid; 
     grid-template-columns: 1fr 1fr; 
@@ -371,12 +318,10 @@ body::before {
 .rank-time { color: var(--accent-neon); font-family: monospace; font-weight: bold; margin-left: 2px; }
 
 .footer-action { 
-    margin-top: auto; 
-    padding-bottom: 10px; /* 緊貼安全區域上方 */
+    margin-top: auto; padding-bottom: 10px; 
     width: 100%; display: flex; justify-content: center;
 }
 
-/* Start Button */
 .start-btn {
     width: 85%; max-width: 320px;
     height: 70px;
@@ -629,3 +574,4 @@ select option { background: #222; }
 .debug-btn { width: 70%; padding: 12px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #555; background: #333; color: white; cursor: pointer; font-weight: bold; }
 .debug-btn:active { background: #555; }
 .hidden-file-input { display: none; }
+}
