@@ -48,12 +48,6 @@ html {
 
 body {
     margin: 0; padding: 0;
-	background: var(--app-bg-gradient);
-	background-color: #2b4b82;
-    background-size: cover; 
-    background-position: center; 
-    background-attachment: fixed; /* 鎖定背景不隨捲動 */
-    background-blend-mode: normal;
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
@@ -621,5 +615,4 @@ select option { background: #222; }
 .debug-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 50; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; }
 .debug-btn { width: 70%; padding: 12px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #555; background: #333; color: white; cursor: pointer; font-weight: bold; }
 .debug-btn:active { background: #555; }
-
 .hidden-file-input { display: none; }
