@@ -1,13 +1,14 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P5 樣式表
+/* * 晟自然輔助系統 - 遊戲室 V14-P6 (終極版)
  * 修正重點：
- * 1. 背景圖改設於 html 根標籤，保證 100% 滿版覆蓋 (解決黑色區塊)
- * 2. 下修按鈕位置，減少底部留白，緊貼安全區域
+ * 1. 移除 background-attachment: fixed (iOS 支援性問題核心)
+ * 2. 使用 body::before 建立「超大背景層 (120%)」，暴力解決所有安全區域白邊/黑邊問題
+ * 3. 確保按鈕位置緊貼安全區域上方
  */
 
 :root {
-    /* 核心變數 */
     --bg-deep: #000000;
-    --app-bg-gradient: linear-gradient(to bottom, #141e30, #243b55);
+    /* 這裡定義藍色漸層，稍後直接使用 */
+    --app-overlay: linear-gradient(to bottom, rgba(20, 30, 48, 0.9), rgba(36, 59, 85, 0.9));
     
     --glass-bg: rgba(255, 255, 255, 0.1);
     --glass-border: rgba(255, 255, 255, 0.15);
@@ -28,43 +29,52 @@
     --input-height: 50px;
     --btn-height: 60px;
     
-    /* V14-P5: 大幅縮減手動安全距離 (原本60px -> 改為10px) */
-    /* 讓 env(safe-area-inset-bottom) 自動決定高度，我們只加一點點緩衝 */
+    /* V14-P6: 維持緊貼底部的設計 */
     --viewer-safe-top: 60px;
     --viewer-safe-bottom: 10px;
     
     --nav-height: 50px;
 }
 
-/* V14-P5 關鍵修正：將背景直接鎖死在 html 根標籤 */
 html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
-    
-    /* 這裡直接設定背景，瀏覽器會強制填滿所有「彈性滾動」與「安全區域」 */
-    background: var(--app-bg-gradient); 
-    background-image: url('page.jpg'), var(--app-bg-gradient);
-    background-size: cover; 
-    background-position: center; 
-    background-attachment: fixed; /* 鎖定背景不隨捲動 */
-    background-blend-mode: overlay;
+    background-color: #000000; /* 最底層保險色 */
 }
 
 body {
     margin: 0; padding: 0;
-    background-color: transparent; /* body 設為透明，讓 html 背景透出來 */
-    position: fixed; 
-    top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
+    position: fixed; /* 鎖定 body 禁止彈性滾動 */
     overflow: hidden;
-    overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-main);
-    touch-action: none; 
+    touch-action: none;
+    background: transparent; /* 確保透明，讓下方的偽元素透出來 */
 }
 
-/* 移除之前的 body::before，簡化結構 */
+/* V14-P6 核心修正：超大背景層 
+   不使用 background-attachment: fixed，而是讓這個層本身 fixed 且比螢幕還大
+*/
+body::before {
+    content: "";
+    position: fixed;
+    /* 讓背景比螢幕大 10%，上下左右各延伸出去，確保絕對覆蓋 */
+    top: -10%; left: -10%; 
+    width: 120%; height: 120%;
+    z-index: -999; /* 最底層 */
+    
+    /* 直接將漸層疊在圖片上 */
+    background-image: var(--app-overlay), url('page.jpg');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    
+    /* 這一行確保 iOS 不會誤判圖層邊界 */
+    transform: translate3d(0,0,0); 
+    pointer-events: none;
+}
 
 * {
     -ms-overflow-style: none;  
@@ -79,17 +89,18 @@ body {
     height: 100dvh; 
     max-width: 480px; 
     margin: 0 auto;
-    position: relative; display: flex; flex-direction: column; overflow: hidden;
+    position: relative; 
+    display: flex; flex-direction: column; overflow: hidden;
     background: transparent;
     
-    /* 頂部保留瀏海距離 */
+    /* 頂部避開瀏海 */
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
     
-    /* V14-P5: 底部距離優化 */
-    /* 只取 (10px 或 系統安全區) 的最大值，讓按鈕更貼底 */
+    /* 底部避開橫條，按鈕會停在這裡 */
     padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
     
     box-sizing: border-box;
+    z-index: 1;
 }
 
 @keyframes alarm-flash {
@@ -109,20 +120,17 @@ body {
         box-shadow: 0 0 50px rgba(0, 210, 255, 0.15);
         top: 50%; transform: translateY(-50%);
         padding-top: 20px; padding-bottom: 20px;
-        /* 電腦版給容器一個深色背景，避免太亮 */
         background: rgba(0,0,0,0.8); 
         backdrop-filter: blur(10px);
     }
-    body { position: relative; background: #000;} 
 }
 
 .screen {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    padding: 0 15px 0 15px; /* V14-P5: 移除底部 padding，交給 app-container 控制 */
+    padding: 0 15px 0 15px; 
     
-    /* 確保內容不會被瀏海遮住 */
+    /* 內部 padding 也需配合安全區域，避免滾動內容被切掉 */
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
-    /* 這裡設為 0，因為父容器已經推擠過了 */
     padding-bottom: 0; 
     
     box-sizing: border-box;
@@ -190,7 +198,7 @@ body {
     flex-shrink: 0;
 }
 
-/* 品牌區塊 - 毛玻璃風格 */
+/* 品牌區塊 */
 .brand-row {
     display: flex; align-items: center; justify-content: center;
     gap: 12px; margin-bottom: 20px;
@@ -364,7 +372,7 @@ body {
 
 .footer-action { 
     margin-top: auto; 
-    padding-bottom: 10px; /* V14-P5: 減少按鈕下方的 padding (原本20px) */
+    padding-bottom: 10px; /* 緊貼安全區域上方 */
     width: 100%; display: flex; justify-content: center;
 }
 
