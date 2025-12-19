@@ -1,21 +1,22 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P6 (視覺融合修正版)
+/* * 晟自然輔助系統 - 遊戲室 V14-P7 (視覺融合修正版 - 深色回歸)
  * 修正重點：
- * 1. [Background] 底部漸層轉為 100% 不透明深藍色 (#141e30)，與瀏覽器底色無縫接軌。
- * 2. [Title] 移植 Logo 提案中的 Digital Glitch (數位崩壞) 風格。
- * 3. [Safe Area] 確保 html 底色與漸層末端一致。
+ * 1. [Background] 恢復深藍色半透明質感 (opacity 0.85)，避免畫面泛白。
+ * 2. [Gradient] 將實心色轉折點推遲至 95%，確保只有最底端與安全區融合。
+ * 3. [Title] 維持 Digital Glitch 風格。
  */
 
 :root {
     /* 核心底色：深藍色 (用於無縫接軌) */
     --bg-core: #141e30; 
     
-    /* 漸層策略：上層半透明 -> 底部變為實心色 */
-    /* 0%~70%: 讓圖片透出來 */
-    /* 90%~100%: 變為純色，遮住圖片邊緣 */
+    /* 漸層策略修正 (V14-P7)：
+       0% ~ 95% : 保持深藍色半透明 (rgba 0.85)，讓底圖隱約可見但維持深色調。
+       95% ~ 100%: 快速過渡到實心色，遮住底部邊界。
+    */
     --app-bg-gradient: linear-gradient(
         to bottom, 
-        rgba(20, 30, 48, 0.2) 0%, 
-        rgba(20, 30, 48, 0.6) 70%, 
+        rgba(20, 30, 48, 0.85) 0%, 
+        rgba(36, 59, 85, 0.85) 95%, 
         var(--bg-core) 100%
     );
     
@@ -44,29 +45,28 @@
     --nav-height: 50px;
 }
 
-/* V14-P6 核心：背景融合設定 */
+/* V14-P7 核心：背景融合設定 */
 html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
     
-    /* 1. 設定最底層顏色 (當圖片沒蓋到，或橡皮筋迴彈時顯示) */
+    /* 1. 設定最底層顏色 */
     background-color: var(--bg-core);
     
     /* 2. 背景疊加：漸層在上，圖片在下 */
-    /* 注意：這裡不使用 blend-mode，改用漸層本身的透明度來控制明暗，比較好預測 */
     background-image: var(--app-bg-gradient), url('page.jpg');
     
     background-size: cover; 
-    background-position: center top; /* 圖片對齊上方，下方讓漸層去蓋 */
+    background-position: center top; 
     background-repeat: no-repeat;
-    background-attachment: fixed; /* 鎖定背景，營造視差感 */
+    background-attachment: fixed; 
     
     overscroll-behavior: none;
 }
 
 body {
     margin: 0; padding: 0;
-    background-color: transparent; /* 讓 body 透明，透出 html 的背景 */
+    background-color: transparent; 
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
@@ -201,57 +201,14 @@ body {
 @keyframes tap-frenzy { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(-15deg) scale(1.15) translateY(2px); } }
 @keyframes tap-frenzy-r { 0% { transform: rotate(0deg) scale(1); } 100% { transform: rotate(15deg) scale(1.15) translateY(2px); } }
 
-/* ★★★ Digital Glitch 風格移植 (Option A-4) ★★★ */
-.glitch-wrapper {
-    position: relative;
-    display: inline-block;
-}
-.glitch-wrapper h1 {
-    font-size: 2.8rem;
-    margin: 0;
-    line-height: 1.2;
-    font-weight: 900;
-    color: #fff;
-    position: relative;
-    letter-spacing: 2px;
-}
-.glitch-wrapper h1::before,
-.glitch-wrapper h1::after {
-    content: attr(data-text); /* 讀取 HTML 中的 data-text */
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: #141e30; /* 背景色，用於遮擋產生切割感 */
-    opacity: 0.8;
-}
-.glitch-wrapper h1::before {
-    left: 2px;
-    text-shadow: -1px 0 #ff00c1; /* 紅色錯位 */
-    clip-path: inset(44% 0 61% 0);
-    animation: glitch-anim-1 2s infinite linear alternate-reverse;
-}
-.glitch-wrapper h1::after {
-    left: -2px;
-    text-shadow: -1px 0 #00fff9; /* 青色錯位 */
-    clip-path: inset(50% 0 30% 0);
-    animation: glitch-anim-2 2.5s infinite linear alternate-reverse;
-}
-
-@keyframes glitch-anim-1 {
-    0% { clip-path: inset(20% 0 80% 0); }
-    20% { clip-path: inset(60% 0 10% 0); }
-    40% { clip-path: inset(40% 0 50% 0); }
-    60% { clip-path: inset(80% 0 5% 0); }
-    80% { clip-path: inset(10% 0 70% 0); }
-    100% { clip-path: inset(30% 0 20% 0); }
-}
-@keyframes glitch-anim-2 {
-    0% { clip-path: inset(10% 0 60% 0); }
-    20% { clip-path: inset(30% 0 10% 0); }
-    40% { clip-path: inset(70% 0 20% 0); }
-    60% { clip-path: inset(20% 0 50% 0); }
-    80% { clip-path: inset(50% 0 10% 0); }
-    100% { clip-path: inset(5% 0 80% 0); }
-}
+/* Digital Glitch Style */
+.glitch-wrapper { position: relative; display: inline-block; }
+.glitch-wrapper h1 { font-size: 2.8rem; margin: 0; line-height: 1.2; font-weight: 900; color: #fff; position: relative; letter-spacing: 2px; }
+.glitch-wrapper h1::before, .glitch-wrapper h1::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #141e30; opacity: 0.8; }
+.glitch-wrapper h1::before { left: 2px; text-shadow: -1px 0 #ff00c1; clip-path: inset(44% 0 61% 0); animation: glitch-anim-1 2s infinite linear alternate-reverse; }
+.glitch-wrapper h1::after { left: -2px; text-shadow: -1px 0 #00fff9; clip-path: inset(50% 0 30% 0); animation: glitch-anim-2 2.5s infinite linear alternate-reverse; }
+@keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); } 100% { clip-path: inset(30% 0 20% 0); } }
+@keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); } 100% { clip-path: inset(5% 0 80% 0); } }
 
 .leaderboard-container { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; margin-bottom: 20px; height: 55vh; max-height: 550px; flex-shrink: 1; min-height: 300px; }
 .mode-box { background: rgba(20, 20, 30, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(5px); position: relative; cursor: pointer; transition: border-color 0.2s; }

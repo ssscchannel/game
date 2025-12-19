@@ -1,5 +1,5 @@
 /**
- * 晟自然輔助系統 - 遊戲室 V14-P3
+ * 晟自然輔助系統 - 遊戲室 V14-P7
  * 核心邏輯層
  * 包含：PWA 註冊、資料讀取、遊戲引擎、F1/錦標賽邏輯
  */
@@ -18,7 +18,8 @@ if ('serviceWorker' in navigator) {
 const VERSION_HISTORY = {
     "V14-P1": "【PWA 架構重構】資料分離、離線快取支援、跨平台渲染優化。",
     "V14-P2": "【iPhone 16 Pro Max 優化】滿版視窗修正、標題故障藝術風格、Start 按鈕美化、手速動畫。",
-    "V14-P3": "【沉浸式暗房修正】修正網址列伸縮導致的白邊問題，採用 Overscroll Lock 與背景延伸策略。"
+    "V14-P6": "【視覺融合與數位風格】修正背景漸層無縫接軌安全區域，並導入 Digital Glitch 標題特效。",
+    "V14-P7": "【緊急修正】修復 JS 語法錯誤導致的載入卡住問題，並微調背景漸層深度與過渡位置。"
 };
 
 // 這是全域變數，稍後會從 data.json 填入
@@ -151,7 +152,6 @@ const APP = {
                 target = target.parentElement;
             }
             if (!isScrollable) {
-                // V14-P3: 配合 CSS overscroll-behavior: none，這裡保留 JS 阻擋作為雙重保險
                 e.preventDefault();
             }
         }, { passive: false });
