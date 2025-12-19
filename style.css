@@ -1,8 +1,8 @@
-/* * 晟自然輔助系統 - 遊戲室 V14-P2 樣式表
- * 基於 V14-P1 優化：
- * 1. iPhone 16 Pro Max 滿版修正 (100dvh)
- * 2. Glitch 標題與手速動畫
- * 3. Start 按鈕美化
+/* * 晟自然輔助系統 - 遊戲室 V14-P3 樣式表
+ * 基於 V14-P2 優化：
+ * 1. 背景圖移至 Body 層級 (解決 iPhone 底部黑邊)
+ * 2. 品牌 Logo 區塊美化 (毛玻璃質感)
+ * 3. 包含 V14-P2 所有特效 (Glitch, Start Button)
  */
 
 :root {
@@ -36,12 +36,10 @@
 
 html, body {
     margin: 0; padding: 0;
-    /* V14-P2: 將底色設為深藍色，避免下拉時出現黑邊 */
-    background-color: #141e30;
+    background-color: #000000; /* 確保底層黑色 */
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; 
-    /* V14-P2: 使用 100dvh 解決 iOS Safari 網址列縮放問題 */
     height: 100dvh; 
     min-height: 100vh;
     overflow: hidden;
@@ -50,6 +48,14 @@ html, body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-main);
     touch-action: none; 
+    
+    /* V14-P3: 將背景設定移至 body，解決 iPhone 底部黑邊問題 */
+    background: var(--app-bg-gradient); 
+    background-image: url('page.jpg'), var(--app-bg-gradient);
+    background-size: cover; 
+    background-position: center; 
+    background-attachment: fixed; 
+    background-blend-mode: overlay;
 }
 
 * {
@@ -62,19 +68,13 @@ html, body {
 
 #app-container {
     width: 100%; 
-    /* V14-P2: 強制填滿視窗高度 */
     height: 100dvh; 
     max-width: 480px; 
     margin: 0 auto;
     position: relative; display: flex; flex-direction: column; overflow: hidden;
     
-    /* V14-P2: 背景固定，避免滾動穿幫 */
-    background: var(--app-bg-gradient); 
-    background-image: url('page.jpg'), var(--app-bg-gradient);
-    background-size: cover; 
-    background-position: center; 
-    background-attachment: fixed; 
-    background-blend-mode: overlay;
+    /* V14-P3: 這裡改為透明，讓下方 body 的背景透出來 */
+    background: transparent;
     
     padding-top: max(var(--viewer-safe-top), env(safe-area-inset-top));
     padding-bottom: max(var(--viewer-safe-bottom), env(safe-area-inset-bottom));
@@ -98,6 +98,9 @@ html, body {
         box-shadow: 0 0 50px rgba(0, 210, 255, 0.15);
         top: 50%; transform: translateY(-50%);
         padding-top: 20px; padding-bottom: 20px;
+        /* 電腦版回復容器背景，避免全螢幕太花 */
+        background: rgba(0,0,0,0.8); 
+        backdrop-filter: blur(10px);
     }
     body { position: relative; background: #000;} 
 }
@@ -164,9 +167,8 @@ html, body {
     width: 20px; height: 20px; fill: white;
 }
 
-/* --- 大廳 (Lobby) & V14-P2 新標題 --- */
+/* --- 大廳 (Lobby) & V14-P3 新版品牌區 --- */
 .header-section {
-    /* V14-P2: 增加間距，解決擁擠感 */
     margin-top: 15px; 
     margin-bottom: 25px;
     display: flex; flex-direction: column; align-items: center;
@@ -175,18 +177,29 @@ html, body {
 
 .brand-row {
     display: flex; align-items: center; justify-content: center;
-    gap: 10px; margin-bottom: 15px;
-    background: rgba(0,0,0,0.3);
-    padding: 8px 20px;
-    border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
-    cursor: pointer; z-index: 9999; 
+    gap: 12px; margin-bottom: 20px;
+    
+    /* V14-P3: 品牌區塊美化 - 高級毛玻璃質感 */
+    background: rgba(30, 40, 50, 0.65); 
+    backdrop-filter: blur(15px) saturate(120%); 
+    padding: 10px 25px;
+    border-radius: 30px; 
+    border: 1px solid rgba(255,255,255,0.15); 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2); 
+    
+    cursor: pointer; z-index: 9999;
+    transition: all 0.3s ease;
 }
-.logo-img { height: 28px; width: auto; pointer-events: none; }
+.brand-row:active {
+    transform: scale(0.98);
+    background: rgba(30, 40, 50, 0.8);
+}
+
+.logo-img { height: 32px; width: auto; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
 .system-title { 
-    font-size: 0.9rem; font-weight: bold; color: #ffffff; 
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    letter-spacing: 1px; pointer-events: none;
+    font-size: 1rem; font-weight: bold; color: #ffffff; 
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    letter-spacing: 1.5px; pointer-events: none;
 }
 
 .title-area {
@@ -215,13 +228,13 @@ html, body {
     100% { transform: rotate(15deg) scale(1.15) translateY(2px); }
 }
 
-/* V14-P2: Glitch Title Styles (from uploaded file) */
+/* Glitch Title Styles */
 .glitch-wrapper {
     position: relative;
     display: inline-block;
 }
 .glitch-wrapper h1 {
-    font-size: 2.8rem; /* 稍微調整以適應手機 */
+    font-size: 2.8rem;
     margin: 0;
     line-height: 1.2;
     font-weight: 900;
@@ -234,7 +247,7 @@ html, body {
     content: attr(data-text);
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: #141e30; /* 背景色配合 App 漸層深色，避免遮擋不全 */
+    background: #141e30; 
     opacity: 0.8;
 }
 .glitch-wrapper h1::before {
@@ -272,9 +285,8 @@ html, body {
     display: grid; 
     grid-template-columns: 1fr 1fr; 
     grid-template-rows: 1fr 1fr;
-    gap: 12px; /* 增加間隙 */
+    gap: 12px;
     margin-bottom: 20px;
-    /* V14-P2: 對應長螢幕手機，使用 vh 單位 */
     height: 55vh; 
     max-height: 550px;
     flex-shrink: 1; 
@@ -357,7 +369,6 @@ html, body {
 }
 .start-btn:active { transform: scale(0.96); }
 
-/* 按鈕背景與光暈 */
 .start-btn::before {
     content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: linear-gradient(90deg, #00c6ff, #0072ff);
