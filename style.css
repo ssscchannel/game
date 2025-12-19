@@ -40,7 +40,7 @@
 html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
-	background-color: #3f7ab0;
+	background-color: #2b4b82;
     
     /* 這裡直接設定背景，瀏覽器會強制填滿所有「彈性滾動」與「安全區域」 */
     
@@ -49,11 +49,11 @@ html {
 body {
     margin: 0; padding: 0;
 	background: var(--app-bg-gradient);
-	background-image: url('page.jpg'), var(--app-bg-gradient);
+	background-color: #2b4b82;
     background-size: cover; 
     background-position: center; 
     background-attachment: fixed; /* 鎖定背景不隨捲動 */
-    background-blend-mode: overlay;
+    background-blend-mode: none;
     position: fixed; 
     top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
