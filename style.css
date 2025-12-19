@@ -205,12 +205,16 @@ body {
     justify-content: center;
     gap: 10px;
     width: 100%;
+	flex-wrap: nowrap;
+	overflow: visible;   /* 確保不會切掉超出的內容 */
 }
 
 /* V14-P8: 手勢動畫優化 */
 .tap-hand {
-    font-size: 2.5rem;
+    font-size: 2rem;
     /* 速度加快一倍 (0.15s -> 0.08s) */
+	flex-shrink: 0;
+	display: inline-block;
     animation: tap-vertical 0.08s infinite alternate;
 }
 .left-hand { transform-origin: center; animation-delay: 0s; }
@@ -228,7 +232,7 @@ body {
     display: inline-block;
 }
 .glitch-wrapper h1 {
-    font-size: 2.8rem;
+    font-size: 2.4rem;
     margin: 0;
     line-height: 1.2;
     font-weight: 900;
