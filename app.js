@@ -1399,7 +1399,7 @@ const GAME = {
                             GAME.endGame(true); 
                         }
                     }
-                }, 50);
+                }, 20);
             } else {
                 GAME.errors++;
                 AUDIO.playError(); 
@@ -1423,7 +1423,7 @@ const GAME = {
                     GAME.firstCard.classList.remove('active', 'error');
                     el.classList.remove('active', 'error');
                     GAME.resetTurn();
-                }, 250);
+                }, 150);
             }
         }
     },
