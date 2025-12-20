@@ -111,10 +111,16 @@
 
         <div id="screen-game" class="screen">
             <div class="app-nav-bar">
-                <div class="nav-left"><button class="nav-btn" onclick="APP.confirmNavTo('lobby')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button></div>
+                <div class="nav-left">
+                    <button class="nav-btn" onclick="APP.confirmNavTo('lobby')" style="background: transparent; border: none; box-shadow: none;">
+                        <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; fill: #00d2ff;">
+                            <path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/>
+                        </svg>
+                    </button>
+                </div>
                 <div class="nav-center" id="player-disp">Player</div>
                 <!-- 下面這行改遊戲計時器 -->
-				<div class="nav-right" style="font-family:monospace; font-size:1.5rem; font-weight:bold; color:var(--primary-neon);" id="timer">0.00</div>
+				<div class="nav-right" style="font-family:monospace; font-size:1.3rem; font-weight:bold; color:var(--primary-neon);" id="timer">0.00</div>
             </div>
             
             <div id="life-bar-wrap" class="life-bar-container"><div id="life-bar" class="life-bar-fill"></div></div>

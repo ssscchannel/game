@@ -116,7 +116,7 @@ body {
     background: transparent;
     border-bottom: none; box-shadow: none;
     margin-bottom: 10px;
-    padding: 0 0px; box-sizing: border-box;
+    padding: 0 14px; box-sizing: border-box;
     flex-shrink: 0; border-radius: 0;
 }
 
@@ -492,28 +492,29 @@ select option { background: #222; }
 
 /* 遊戲區塊 */
 #screen-game { 
-    background: rgba(255, 255, 255, 0.3); /* 改這裡可以換底色 (顏色 + 透明度) */
+    background: transparent; /* 改這裡可以換底色 (顏色 + 透明度) */
     border-radius: 20px; /* 改這裡可以調整圓角 */
 	margin: 10px;
 	height: calc(100% - 20px);
 	width: calc(100% - 20px);
 	box-sizing:border-box;
-	border: 1px solid rgba(255,255,255,0.3); /* 👇 改這裡可以換邊框顏色 */
+	border: none solid rgba(255,255,255,0.3); /* 👇 改這裡可以換邊框顏色 */
 }
 
 /* 生存模式血條 */
 .life-bar-container { 
-    width: 100%; 
+    width: auto; 
 	height: 10px; 
-	background: #555; 
+	background: #bdbdbd; 
 	border-radius: 3px; 
-	margin-top: 5px; 
+	/* margin-top: 5px;  */
+    margin: 5px 12px 0 12px; /* 血條左右寬度 */
 	overflow: hidden; 
 	display: none;
 	}
 .life-bar-fill { 
     height: 100%; 
-	background: #e74c3c; 
+	background: #e7240e; 
 	width: 100%; 
 	transition: width 0.1s linear; 
 	}
@@ -521,8 +522,8 @@ select option { background: #222; }
 #game-grid { 
     display: grid;
 	/* 👇 卡片之間的距離 */
-	gap: 10px;
-	padding: 15px;
+	gap: 15px;
+	padding: 10px;
 	height: calc(100% - 90px);
 	/* 👇 這裡控制「幾直幾橫」，目前是 3直(columns) x 4橫(rows) */
 	grid-template-columns: repeat(3, 1fr);
@@ -532,26 +533,29 @@ select option { background: #222; }
 .card { 
     width: 100%; 
 	height: 100%; 
-	background: #333; /* 卡片背景色 (目前是深灰) */
+	background: #333; /* 卡片背景色 */
 	color: #ffffff; /* 卡片文字顏色 */
 	border-radius: 10px; /* 卡片圓角 */
-	border: 5px solid #555; /* 卡片邊框 (目前是灰色 #555) */
+	border: 3px solid #bdbdbd; /* 卡片邊框 */
+
 	display: flex; 
-	justify-content: center; 
-	align-items: center; 
+	justify-content: center; /* 水平置中 */
+	align-items: center; /* 垂直置中 */
+
 	font-weight: bold; 
 	cursor: pointer; 
 	user-select: none; 
 	transition: transform 0.1s; 
 	box-shadow: 0 3px 5px rgba(0,0,0,0.3); 
 	text-align: center; 
-	line-height: 1.1; 
-	overflow: hidden; 
-	white-space: nowrap; 
-	min-width: 0; 
-	min-height: 0; }
 
-.card.font-lg { font-size: 2.2rem; } .card.font-md { font-size: 1.3rem; } .card.font-sm { font-size: 0.95rem; letter-spacing: -0.5px; } 
+	line-height: 1.1; 
+	overflow: hidden; /* 超出範圍隱藏 (避免炸開) */
+	white-space: nowrap; /* 絕對不換行 */
+    padding: 0 4px; 
+    box-sizing: border-box; 
+	min-width: 0; 
+	min-height: 0; } 
 
 .card:active { transform: scale(0.95); }
 
@@ -594,3 +598,40 @@ select option { background: #222; }
 .debug-btn { width: 70%; padding: 12px; font-size: 1.1rem; border-radius: 8px; border: 1px solid #555; background: #333; color: white; cursor: pointer; font-weight: bold; }
 .debug-btn:active { background: #555; }
 .hidden-file-input { display: none; }
+
+/* --- [晟自然] 遊戲畫面專用：絕對置中與邊距調整 --- */
+
+/* 1. 設定導覽列為定位基準 */
+#screen-game .app-nav-bar {
+    position: relative; /* 這一行很重要，讓中間文字知道要對齊這條橫槓 */
+}
+
+/* 2. 讓中間的 ID (nav-center) 強制絕對置中 */
+#screen-game .nav-center {
+    position: absolute;       /* 脫離排隊隊伍，浮起來 */
+    left: 50%;                /* 設在容器的 50% 處 */
+    transform: translateX(-50%); /* 修正自身的寬度，達成完美置中 */
+    
+    width: auto;              /* 寬度自動 */
+    max-width: 50%;           /* 限制最大寬度，避免名字太長蓋住左右按鈕 */
+    white-space: nowrap;      /* 不換行 */
+    overflow: hidden;         /* 超出隱藏 */
+    text-overflow: ellipsis;  /* 變成... */
+    
+    text-align: center;       /* 文字置中 */
+}
+
+/* 3. 調整左上角「房子按鈕」的位置 */
+#screen-game .nav-left {
+    /* 因為中間已經浮起來了，這裡不需要擔心擠壓，盡情調整 */
+    padding-left: 3px; 
+}
+
+/* 4. 調整右上角「計時器」的位置 */
+#screen-game .nav-right {
+    justify-content: flex-end; 
+    padding-right: 3px; 
+    
+    /* 這裡可以設寬一點也沒關係，不會影響中間的置中了 */
+    width: 100px; 
+}

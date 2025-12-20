@@ -212,7 +212,7 @@ const APP = {
             wasPaused = true;
         }
 
-        if (confirm("確定要返回首頁嗎？目前的進度將會遺失。")) {
+        if (confirm("確定要返回首頁嗎？")) {
             if(wasPaused) GAME.abort(); 
             APP.navTo(screenId);
         } else {
@@ -745,6 +745,11 @@ const F1 = {
         const bankTitle = APP_DATA.banks.find(b=>b.id===APP.state.currentBankId).title;
         document.getElementById('player-disp').innerText = `🏎️ ${player.name}`;
         document.getElementById('life-bar-wrap').style.display = 'none';
+
+        // 🟢 加入這兩行確保 F1 樣式正確
+        document.getElementById('timer').style.fontSize = '1.3rem'; 
+        document.getElementById('timer').style.textShadow = 'none';
+
         document.getElementById('timer').style.color = 'var(--primary-neon)';
 
         GAME.initGrid(false); 
@@ -1043,6 +1048,11 @@ const TOUR = {
         const bankTitle = APP_DATA.banks.find(b=>b.id===TOUR.config.bankId).title;
         document.getElementById('player-disp').innerText = `🏆 ${currentPlayer.name}`;
         document.getElementById('life-bar-wrap').style.display = 'none';
+
+        // 🟢 加入這兩行確保 錦標賽 樣式正確
+        document.getElementById('timer').style.fontSize = '1.3rem';
+        document.getElementById('timer').style.textShadow = 'none';
+
         document.getElementById('timer').style.color = 'var(--primary-neon)';
 
         GAME.initGrid(false);
@@ -1251,11 +1261,29 @@ const GAME = {
         if (!isValid) return; 
 
         APP.state.currentPlayer.name = name;
-        document.getElementById('player-disp').innerText = `👤 ${name}`;
+        document.getElementById('player-disp').innerText = `🆔 ${name}`;
         
+        // --- 🟢 修改開始：生存模式計時器樣式設定 ---
         const isSurv = APP.state.currentMode === 'survival';
+        const timerEl = document.getElementById('timer');
+        
         document.getElementById('life-bar-wrap').style.display = isSurv ? 'block' : 'none';
-        document.getElementById('timer').style.color = isSurv ? '#e74c3c' : '#fff'; 
+        
+        if (isSurv) {
+            // [生存模式] 設定
+            timerEl.style.color = '#ff3333';       // 顏色：鮮紅色 (原本是 #e74c3c)
+            timerEl.style.fontSize = '1.5rem';     // 大小：變超大 (原本是 1.3rem)
+            timerEl.style.textShadow = '0 0 15px rgba(255, 228, 73, 0.8)'; // 特效：紅色發光
+            // 微調位置避免太擠 (選用)
+            timerEl.style.transform = 'translateY(5px)'; 
+        } else {
+            // [標準模式] 恢復預設值 (這很重要，不然切換回來會變不回原樣)
+            timerEl.style.color = '#fff';          // 顏色：白色
+            timerEl.style.fontSize = '1.3rem';     // 大小：恢復正常
+            timerEl.style.textShadow = 'none';     // 特效：移除
+            timerEl.style.transform = 'none';
+        }
+        // --- 🟢 修改結束 ---
         
         document.getElementById('app-container').classList.remove('critical-alarm');
 
@@ -1293,6 +1321,34 @@ const GAME = {
                 el.innerHTML = `<img src="${d.content}">`;
             } else {
                 el.innerText = d.content;
+
+                // --- 🟢 核心修正：動態字體大小計算公式 ---
+                // 這是為了在「只有一行」的前提下，讓字盡量大
+                const len = d.content.length;
+                let fontSizeStr = "1rem"; // 預設值
+
+                if (len <= 2) {
+                    fontSizeStr = "2.6rem"; // 1-2字：超大
+                } else if (len <= 3) {
+                    fontSizeStr = "2.2rem"; // 3字：很大
+                } else if (len <= 4) {
+                    fontSizeStr = "1.8rem"; // 4字：大
+                } else if (len <= 6) {
+                    fontSizeStr = "1.4rem"; // 5-6字：中
+                } else if (len <= 8) {
+                    fontSizeStr = "1.1rem"; // 7-8字：稍小
+                } else if (len <= 10) {
+                    fontSizeStr = "0.95rem"; // 9-10字：小
+                } else {
+                    // 11字以上：使用數學公式極限壓縮
+                    // 避免小於 0.65rem (太小會看不見)，但盡量塞進去
+                    let calculated = Math.max(0.65, 9.5 / len);
+                    fontSizeStr = calculated + "rem"; 
+                }
+                
+                // 直接寫入 style
+                el.style.fontSize = fontSizeStr;
+
             }
             el.dataset.matchId = d.matchId;
             el.onclick = () => GAME.handleCardClick(el);
