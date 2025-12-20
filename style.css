@@ -403,7 +403,7 @@ body {
 .btn-thick:active { transform: scale(0.98); }
 
 .setting-row { margin-bottom: 15px; width: 100%; }
-.setting-label { display: block; color: #aaa; margin-bottom: 5px; font-size: 0.9rem; }
+.setting-label { display: block; color: #aaa; margin-bottom: 5px; font-size: 1rem; }
 select {
     width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #555;
     background: rgba(255,255,255,0.1); color: white; font-size: 1rem; box-sizing: border-box;
@@ -468,7 +468,14 @@ select option { background: #222; }
 .vs-player { font-size: 2rem; font-weight: bold; color: white; margin: 10px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 .vs-v { font-size: 1.5rem; color: #888; font-style: italic; font-weight: 900; margin: 5px 0; }
 
-.podium { display: flex; align-items: flex-end; justify-content: center; height: 250px; gap: 15px; margin-bottom: 20px; margin-top: 20px;}
+.podium { 
+    display: flex; 
+    align-items: flex-end; 
+    justify-content: center; 
+    height: 250px; 
+    gap: 15px; 
+    margin-bottom: 20px; 
+    margin-top: 80px;}
 .podium-bar { width: 90px; background: linear-gradient(to top, #c0392b, #e74c3c); border-radius: 10px 10px 0 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 10px; position: relative;}
 .p-1 { height: 220px; background: linear-gradient(to top, #f1c40f, #f39c12); z-index: 2; box-shadow: 0 0 30px rgba(241, 196, 15, 0.6); border: 2px solid #fff; }
 .p-2 { height: 160px; background: linear-gradient(to top, #bdc3c7, #ecf0f1); z-index: 1; }
@@ -552,7 +559,7 @@ select option { background: #222; }
 	line-height: 1.1; 
 	overflow: hidden; /* 超出範圍隱藏 (避免炸開) */
 	white-space: nowrap; /* 絕對不換行 */
-    padding: 0 4px; 
+    padding: 0 2px; 
     box-sizing: border-box; 
 	min-width: 0; 
 	min-height: 0; } 
@@ -582,10 +589,32 @@ select option { background: #222; }
 
 #res-score { color: var(--primary-neon) !important; text-shadow: 0 0 20px rgba(0,210,255,0.5); }
 #history-list { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; flex-grow:1; }
-.hist-row { display: grid; grid-template-columns: 1fr 90px 1fr; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px 0; color: white; }
-.hist-name { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold;}
-.hist-date { text-align: center; color: #bbb; font-size: 0.8rem; }
-.hist-score { text-align: right; font-weight: bold; }
+.hist-row { 
+    display: grid; 
+    /* 名字(彈性) | 學校(固定短) | 日期(固定) | 成績(彈性靠右) */
+    grid-template-columns: 1fr 50px 70px 1fr; 
+    gap: 5px; /* 欄位間距 */
+    align-items: center; 
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    padding: 8px 0; 
+    color: white; 
+    font-size: 0.95rem; /* 整體字體微調 */
+}
+.hist-name { 
+    text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold;}
+.hist-date { 
+    text-align: center; color: #666; font-size: 0.75rem; }
+.hist-score { 
+    text-align: right; font-weight: bold; }
+.hist-school {
+    text-align: center;
+    color: #aaa;       /* 使用次要顏色，不搶名字風采 */
+    font-size: 0.9rem;
+    font-weight: bold;
+    background: rgba(255,255,255,0.1); /* 給個淡背景，像Badge */
+    border-radius: 4px;
+    padding: 2px 0;
+}
 
 .admin-menu { display: flex; flex-direction: column; gap: 15px; justify-content: center; align-items: center; height: 100%; }
 .btn-admin { width: 80%; max-width: 300px; padding: 15px; border-radius: 12px; border:none; font-size: 1.2rem; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.1s; }
@@ -634,4 +663,137 @@ select option { background: #222; }
     
     /* 這裡可以設寬一點也沒關係，不會影響中間的置中了 */
     width: 100px; 
+}
+
+/* --- [晟自然] 移除密碼輸入框預設的顯示/隱藏眼睛圖示 --- */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+input[type="password"]::-webkit-password-reveal-button {
+    display: none; 
+    -webkit-appearance: none;
+}
+
+/* --- [晟自然] 針對 F1 按鈕 Emoji 進行視覺放大補償 --- */
+#m-f1 .m-emoji {
+    font-size: 2.5rem; /* 原本通用設定是 2.2rem，這裡單獨放大 */
+    transform: scale(1.1); /* 或者用縮放的方式微調，更有彈性 */
+}
+
+/* --- [晟自然] 錦標賽設定頁專屬樣式 --- */
+#screen-tour-setup .setting-label {
+    color: var(--tour-gold); /* 使用錦標賽的主題金黃色 */
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+#screen-tour-setup select {
+    border-color: var(--tour-gold); /* 下拉選單邊框也改成金色 */
+    color: white;
+}
+
+/* 讓加減按鈕被按下時也有金色回饋 */
+#screen-tour-setup .step-btn:active {
+    background: var(--tour-gold);
+    color: black;
+}
+
+/* --- [晟自然] F1 賽制設定頁專屬樣式 (極速紅風格) --- */
+
+/* 1. 設定選項的標題：使用 F1 紅色並加上微弱霓虹光 */
+#screen-f1-setup .setting-label {
+    color: var(--f1-red); /* 讀取系統定義的紅色 */
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 24, 1, 0.3); /* 增加速度感的光暈 */
+}
+
+/* 2. 下拉選單：邊框變紅 */
+#screen-f1-setup select {
+    border: 1px solid var(--f1-red);
+    color: white;
+    background-color: rgba(0, 0, 0, 0.2); /* 稍微加深底色讓文字更清楚 */
+}
+
+/* 3. 數字加減框：外框加入淡淡的紅色 */
+#screen-f1-setup .stepper-container {
+    border: 1px solid rgba(255, 24, 1, 0.3);
+}
+
+/* 4. 加減按鈕：點擊(Active)時變成亮紅色，給予強烈回饋 */
+#screen-f1-setup .step-btn:active {
+    background: var(--f1-red);
+    color: white;
+    transition: background 0.1s;
+}
+
+/* 5. (選項) 如果該頁面有「開始排位賽」按鈕，也可以強制改成紅色系 */
+#screen-f1-setup .btn-primary {
+    background: linear-gradient(135deg, #cc0000 0%, #ff4d4d 100%);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
+    border: none;
+}
+
+/* --- [晟自然] 錦標賽選手輸入畫面排版優化 --- */
+
+/* 1. 設定該畫面主容器：內容從上方開始排列，不要硬撐開 */
+#screen-tour-input {
+    justify-content: flex-start; /* 預設可能是 space-between，改成從頭開始排 */
+    gap: 30px; /* 設定 導覽列、輸入區、按鈕區 之間的間距 */
+}
+
+/* 2. 輸入框列表區域：給予一些彈性，但不要強制撐大 */
+#screen-tour-input .input-list-container {
+    flex: 0 1 auto; /* 關鍵：0=不放大, 1=可縮小, auto=依內容大小 */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px; /* 讓輸入框距離導覽列稍微遠一點，比較透氣 */
+}
+
+/* 3. 底部按鈕區域：移除置底強制性 */
+#screen-tour-input .bottom-action-area {
+    margin-top: 0; /* 移除可能的 margin-top: auto */
+    padding-bottom: 40px; /* 底部留一點緩衝空間，以免太貼螢幕邊緣 */
+}
+
+/* --- [晟自然] 錦標賽報到頁：按鈕置底 + 中間滿版延伸 --- */
+
+/* 1. 確保該頁面容器是彈性直向排列，且高度佔滿 */
+#screen-tour-reg {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 確保容器有高度，內部元素才能撐開 */
+}
+
+/* 2. 輸入名單區 (中間區塊) */
+#screen-tour-reg .reg-grid {
+    /* 【關鍵】flex: 1 代表「自動填滿剩餘空間」 */
+    /* 這會讓輸入框的容器一路延伸到最下方的按鈕上面 */
+    flex: 1; 
+    
+    /* 移除原本的高度限制，讓它能無限延伸 */
+    max-height: none; 
+    
+    /* 確保內容溢出時是在這個區域內滾動 */
+    overflow-y: auto;
+    
+    /* 讓輸入框從上面開始排 (不要分散對齊) */
+    justify-content: flex-start;
+    
+    /* 修正內邊距，避免內容被切掉 */
+    padding-bottom: 20px;
+    box-sizing: border-box;
+}
+
+/* 3. 底部按鈕區 */
+#screen-tour-reg .footer-btns {
+    /* 防止按鈕區被壓縮 */
+    flex-shrink: 0;
+    
+    /* 確保按鈕區貼齊底部，並給一點呼吸空間 */
+    margin-top: 0; 
+    padding-bottom: 20px;
 }

@@ -141,9 +141,10 @@
             </div>
         </div>
 
+        <!-- 下面改歷史成績 -->
         <div id="screen-history" class="screen">
             <div class="app-nav-bar">
-                <div class="nav-left"><button class="nav-btn" onclick="APP.navTo('lobby')"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div>
+                <div class="nav-left"><button class="nav-btn" onclick="APP.navTo('lobby')" style="background: transparent; border: none; box-shadow: none;"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div>
                 <div class="nav-center" id="hist-title">歷史紀錄</div>
                 <div class="nav-right"></div>
             </div>
@@ -152,7 +153,16 @@
         </div>
 
         <div id="screen-f1-setup" class="screen">
-            <div class="app-nav-bar"><div class="nav-left"><button class="nav-btn" onclick="APP.navTo('input')"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div><div class="nav-center">F1 賽制設定</div><div class="nav-right"></div></div>
+            <div class="app-nav-bar">
+                <div class="nav-left">
+                    <button class="nav-btn" onclick="APP.navTo('input')" style="background: transparent; border: none; box-shadow: none;">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="nav-center" onclick="F1.triggerDebug()">F1 賽制設定</div>
+                <div class="nav-right"></div></div>
             <div class="mode-container scrollable-y">
                 <div class="setting-row">
                     <span class="setting-label">參賽人數</span>
@@ -163,30 +173,31 @@
                     </div>
                 </div>
                 <div class="setting-row">
-                    <span class="setting-label">Round 1 (排位賽) 題庫</span>
+                    <span class="setting-label">Round 1 排位賽</span>
                     <select id="sel-r1"></select>
                 </div>
                 <div class="setting-row">
-                    <span class="setting-label">Round 2 (衝刺賽) 題庫</span>
+                    <span class="setting-label">Round 2 衝刺賽</span>
                     <select id="sel-r2"></select>
                 </div>
                 <div class="setting-row">
-                    <span class="setting-label">Round 3 (決賽) 題庫</span>
+                    <span class="setting-label">Round 3 決賽</span>
                     <select id="sel-r3"></select>
                 </div>
-                <div style="height:50px; width:100%; position:absolute; top:0; left:0;" onclick="F1.triggerDebug()"></div>
+                
             </div>
-            <div class="footer-btns"><button class="btn-thick btn-f1-red" onclick="F1.createRace()">建立賽事</button></div>
+            <div class="footer-btns">
+                <button class="btn-thick btn-f1-red" onclick="F1.createRace()">進行排位賽</button></div>
         </div>
 
-        <div id="screen-f1-ready" class="screen f1-theme">
+        <div id="screen-f1-ready" class="screen">
             <div class="ready-box">
                 <div style="color:var(--f1-red); font-size:1.5rem; font-weight:bold; margin-bottom:20px;" id="ready-round-title">Round 1</div>
                 <div class="next-player-label">Next Driver</div>
                 
                 <div id="r1-name-input-area" style="width:100%; text-align:center;">
                     <div style="font-size:4rem; font-weight:bold; color:#555; margin-bottom:10px;" id="r1-seat-num">1號</div>
-                    <input type="text" id="inp-current-name" class="input-field" style="text-align:center; font-size:2rem; height:70px;" placeholder="輸入名稱">
+                    <input type="text" id="inp-current-name" class="input-field" style="text-align:center; font-size:2rem; height:70px;">
                 </div>
                 
                 <div id="rx-name-display" class="next-player-name">Player</div>
@@ -195,10 +206,19 @@
         </div>
 
         <div id="screen-f1-round-result" class="screen">
-            <div class="app-nav-bar"><div class="nav-center" style="color:var(--f1-red)" id="rr-title">Round 1 Result</div></div>
+            <div class="app-nav-bar">
+                <div class="nav-center" style="color:var(--f1-red)" id="rr-title">Round 1 Result</div></div>
             <div class="scrollable-y" style="flex-grow:1;">
                 <table class="rank-table">
-                    <thead><tr><th width="10%">#</th><th>Name</th><th>Time</th><th>Pts</th></tr></thead>
+                    <thead>
+                        <tr id="rr-thead-row">
+                            <th width="10%">#</th>
+                            <th>選手</th>
+                            <th>Time</th>
+                            <th>Pts</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
                     <tbody id="rr-tbody"></tbody>
                 </table>
             </div>
@@ -207,28 +227,37 @@
 
         <div id="screen-f1-podium" class="screen f1-theme">
             <div class="app-nav-bar">
-                <div class="nav-left"><button class="nav-btn" onclick="APP.navTo('lobby')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></button></div>
-                <div class="nav-center">🏆 最終榮耀</div>
+                <div class="nav-left"></div>
+                <div class="nav-center" sstyle="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <span style="font-size: 2.5rem; line-height: 1;">🏎️</span> 
+                    <span style="line-height: 1;">最速傳說</span>
+                </div>
                 <div class="nav-right"></div>
             </div>
             <div class="podium" id="podium-area"></div>
             <div id="podium-list" class="podium-list scrollable-y"></div>
-            <div class="footer-btns"><button class="btn-thick btn-back" onclick="APP.navTo('lobby')">返回大廳</button></div>
+            <div class="footer-btns"><button class="btn-thick btn-back" onclick="APP.navTo('lobby')">返回首頁</button></div>
         </div>
 
         <div id="screen-tour-setup" class="screen">
-            <div class="app-nav-bar"><div class="nav-left"><button class="nav-btn" onclick="APP.navTo('input')"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div><div class="nav-center">錦標賽設定</div><div class="nav-right"></div></div>
+            <div class="app-nav-bar">
+                <div class="nav-left">
+                    <button class="nav-btn" onclick="APP.navTo('input')" style="background: transparent; border: none; box-shadow: none;"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                    </button></div>
+                    <div style="height:50px; width:100%; position:absolute; top:0; left:0;" onclick="TOUR.triggerDebug()"></div>
+                    <div class="nav-center" onclick="TOUR.triggerDebug()">錦標賽設定</div>
+                    <div class="nav-right"></div></div>
             <div class="mode-container">
                 <div class="setting-row">
-                    <span class="setting-label">參賽人數 (4-32)</span>
+                    <span class="setting-label">參賽人數</span>
                     <div class="stepper-container">
                         <button class="step-btn" onclick="TOUR.adjustPlayers(-1)">-</button>
-                        <div class="step-display" id="disp-tour-players">8</div>
+                        <div class="step-display" id="disp-tour-players">4</div>
                         <button class="step-btn" onclick="TOUR.adjustPlayers(1)">+</button>
                     </div>
                 </div>
                 <div class="setting-row">
-                    <span class="setting-label">比賽題庫</span>
+                    <span class="setting-label">賽程規劃</span>
                     <select id="sel-tour-bank"></select>
                 </div>
                 <div style="height:50px; width:100%; position:absolute; top:0; left:0;" onclick="TOUR.triggerDebug()"></div>
@@ -237,7 +266,7 @@
         </div>
 
         <div id="screen-tour-reg" class="screen">
-            <div class="app-nav-bar"><div class="nav-left"><button class="nav-btn" onclick="APP.navTo('tour-setup')"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div><div class="nav-center">輸入選手名稱</div><div class="nav-right"></div></div>
+            <div class="app-nav-bar"><div class="nav-left"><button class="nav-btn" onclick="APP.navTo('input')" style="background: transparent; border: none; box-shadow: none;"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div><div class="nav-center">登錄參賽選手</div><div class="nav-right"></div></div>
             <div id="reg-list" class="reg-grid scrollable-y"></div>
             <div class="footer-btns"><button class="btn-thick btn-tour-gold" onclick="TOUR.generateBracket()">產生賽程</button></div>
         </div>
@@ -262,7 +291,8 @@
         </div>
 
         <div id="screen-admin" class="screen">
-            <div class="app-nav-bar"><div class="nav-left"><button class="nav-btn" onclick="APP.navTo('lobby')"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div><div class="nav-center">管理員後台</div><div class="nav-right"></div></div>
+            <div class="app-nav-bar">
+                <div class="nav-left"><button class="nav-btn" onclick="APP.navTo('lobby')" style="background: transparent; border: none; box-shadow: none;"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button></div><div class="nav-center">管理員後台</div><div class="nav-right"></div></div>
             <div class="admin-menu">
                 <button class="btn-admin btn-save" onclick="APP.adminSave()">儲存紀錄</button>
                 <button class="btn-admin btn-import" onclick="document.getElementById('file-upload').click()">匯入紀錄</button>

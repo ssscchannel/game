@@ -549,6 +549,7 @@ const APP = {
             
             div.innerHTML = `
                 <span class="hist-name">${log.player}</span>
+                <span class="hist-school">${log.school||""}</span>
                 <span class="hist-date">${dateStr}</span>
                 <span class="hist-score" style="color:${log.mode==='survival'?'#e74c3c':'var(--primary-neon)'}">
                     ${scoreDisplay}
@@ -789,8 +790,13 @@ const F1 = {
             p.totalPoints += points;
         });
 
+        /* === 修改位置：app.js -> F1.calcRoundResult 函式內 (後半段) === */
+
         if (silent) return;
 
+        // 1. 決定排序方式
+        // R1 (rIdx=0)：依本輪時間排序
+        // R2, R3 (rIdx>0)：依總積分排序 (積分相同則比總時間)
         let displayList = [...F1.players];
         if (rIdx > 0) {
             displayList.sort((a,b) => (b.totalPoints - a.totalPoints) || (a.roundTimes.reduce((x,y)=>x+y,0) - b.roundTimes.reduce((x,y)=>x+y,0)));
@@ -798,12 +804,36 @@ const F1 = {
             displayList.sort((a,b) => a.roundTimes[0] - b.roundTimes[0]);
         }
 
+        const theadRow = document.getElementById('rr-thead-row');
         const tbody = document.getElementById('rr-tbody');
         tbody.innerHTML = "";
+
+        // 2. 設定統一的標題 (5欄)
+        // 使用 <small> 標籤讓 (本輪) 字樣變小換行，節省手機空間
+        theadRow.innerHTML = `
+            <th width="10%">#</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Pts</th>
+            <th>Total</th>
+        `;
+
+        // 3. 生成統一的內容
         displayList.forEach((p, rank) => {
             const tr = document.createElement('tr');
-            let displayTime = (rIdx > 0) ? p.roundTimes.slice(0, rIdx+1).reduce((acc, v) => acc + v, 0).toFixed(2) : p.roundTimes[rIdx].toFixed(2);
-            tr.innerHTML = `<td>${rank+1}</td><td>${p.name}</td><td class="hl-score">${displayTime}s</td><td class="hl-points">${p.totalPoints} <small>pts</small></td>`;
+            
+            // 取得「本輪時間」
+            let currentRoundTime = p.roundTimes[rIdx].toFixed(2);
+            // 取得「本輪積分」
+            let currentRoundPts = p.roundPoints[rIdx];
+            
+            tr.innerHTML = `
+                <td>${rank+1}</td>
+                <td>${p.name}</td>
+                <td class="hl-score">${currentRoundTime}s</td>
+                <td style="color:#aaa; font-weight:bold;">+${currentRoundPts}</td>
+                <td class="hl-points">${p.totalPoints} <small>pts</small></td>
+            `;
             tbody.appendChild(tr);
         });
 
@@ -1046,7 +1076,7 @@ const TOUR = {
         APP.state.currentBankId = TOUR.config.bankId;
         
         const bankTitle = APP_DATA.banks.find(b=>b.id===TOUR.config.bankId).title;
-        document.getElementById('player-disp').innerText = `🏆 ${currentPlayer.name}`;
+        document.getElementById('player-disp').innerText = `🆔 ${currentPlayer.name}`;
         document.getElementById('life-bar-wrap').style.display = 'none';
 
         // 🟢 加入這兩行確保 錦標賽 樣式正確
@@ -1148,7 +1178,12 @@ const TOUR = {
     showPodium: function() {
         AUDIO.playWin();
         let winners = [];
-        if(TOUR.players.length === 0) {
+
+        // 👇 修改這裡：增加判斷「!TOUR.players.some(p => p.finalRank > 0)」
+        // 意思是：如果沒有選手，或者 所有選手都還沒有名次，就顯示模擬資料
+        if(TOUR.players.length === 0 || !TOUR.players.some(p => p.finalRank > 0)) {
+
+            // --- 這裡是原本的模擬資料區塊 ---
             winners = [
                 {name:"模擬冠軍", finalRank:1, totalTime:30, matchesCount:3},
                 {name:"模擬亞軍", finalRank:2, totalTime:32, matchesCount:3},
@@ -1156,7 +1191,9 @@ const TOUR = {
                 {name:"模擬殿軍", finalRank:4, totalTime:40, matchesCount:3},
                 {name:"模擬選手A", finalRank:0, totalTime:15, matchesCount:1}
             ];
+
         } else {
+            // --- 這裡是原本的真實資料區塊 (保持不變) ---
             const school = document.getElementById('input-school').value;
             const bankId = TOUR.config.bankId;
             const bankTitle = APP_DATA.banks.find(b=>b.id===bankId).title;
@@ -1328,21 +1365,23 @@ const GAME = {
                 let fontSizeStr = "1rem"; // 預設值
 
                 if (len <= 2) {
-                    fontSizeStr = "2.6rem"; // 1-2字：超大
+                    fontSizeStr = "2.2rem"; // 原 2.6rem -> 改小
                 } else if (len <= 3) {
-                    fontSizeStr = "2.2rem"; // 3字：很大
+                    fontSizeStr = "1.8rem"; // 原 2.2rem -> 改小
                 } else if (len <= 4) {
-                    fontSizeStr = "1.8rem"; // 4字：大
+                    fontSizeStr = "1.5rem"; // 原 1.8rem -> 改小
+                } else if (len <= 5) {      // 新增 5 字判斷 (常見化學式長度)
+                    fontSizeStr = "1.2rem"; 
                 } else if (len <= 6) {
-                    fontSizeStr = "1.4rem"; // 5-6字：中
+                    fontSizeStr = "1.0rem"; // 原 1.4rem -> 這是關鍵，6字是臨界點
                 } else if (len <= 8) {
-                    fontSizeStr = "1.1rem"; // 7-8字：稍小
+                    fontSizeStr = "0.9rem"; // 原 1.1rem -> 改小
                 } else if (len <= 10) {
-                    fontSizeStr = "0.95rem"; // 9-10字：小
+                    fontSizeStr = "0.8rem"; // 原 0.95rem -> 改小
                 } else {
-                    // 11字以上：使用數學公式極限壓縮
-                    // 避免小於 0.65rem (太小會看不見)，但盡量塞進去
-                    let calculated = Math.max(0.65, 9.5 / len);
+                    // 11字以上：壓縮公式調整
+                    // // 分子從 9.5 改為 7.5，讓縮小幅度更劇烈
+                    let calculated = Math.max(0.6, 7.5 / len);
                     fontSizeStr = calculated + "rem"; 
                 }
                 
