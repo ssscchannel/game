@@ -275,6 +275,16 @@ const APP = {
 
         if (screenId === 'input') {
             document.getElementById('input-name').value = "";
+			
+			// ★★★ Fix Bug: 重置題庫狀態 ★★★
+            // 避免從 F1 模式返回後，內部 state 仍停留在 F1 最後一關，導致與介面顯示不符
+            if (APP_DATA.banks && APP_DATA.banks.length > 0) {
+                // 1. 強制重繪按鈕 (renderBankButtons 預設會將第一個設為 selected)
+                APP.renderBankButtons();
+                // 2. 強制將內部狀態重置為第一個題庫
+                APP.state.currentBankId = APP_DATA.banks[0].id;
+            }
+			
         }
         if (screenId === 'lobby') APP.updateLeaderboardV11();
         if (screenId === 'history') APP.renderHistory(filterStr);
