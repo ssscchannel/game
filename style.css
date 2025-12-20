@@ -107,7 +107,7 @@ body {
     opacity: 0; pointer-events: none; z-index: 0;
 }
 .screen.active { opacity: 1; pointer-events: auto; z-index: 10; }
-.screen.f1-theme, .screen.tour-theme { background: rgba(0,0,0,0.6); z-index: 20; }
+.screen.f1-theme, .screen.tour-theme { background: transparent; z-index: 20; }
 
 /* 導覽列 */
 .app-nav-bar {
