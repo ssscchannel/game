@@ -24,8 +24,8 @@ const VERSION_HISTORY = {
 };
 
 // 這是全域變數，稍後會從 data.json 填入
+const API_URL = "https://script.google.com/macros/s/AKfycbz4UrD4QF47dRe9FtIFNpb4JwK0FhxG0G80rZdx9NVSdVjeKbytpA_BScO8w4zdZoCm/exec"; 
 let APP_DATA = { banks: [] };
-
 const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 
 // ==========================================================
@@ -98,16 +98,12 @@ const APP = {
     pendingAction: null, 
 
     init: function() {
-        // 1. 讀取歷史紀錄
-        const saved = localStorage.getItem('cheng_nature_game_log_v2');
-        if (saved) APP.state.history = JSON.parse(saved);
-
+        // 1. 初始化介面值
         const prefSchool = localStorage.getItem('pref_school');
         if (prefSchool) document.getElementById('input-school').value = prefSchool;
-        
         document.getElementById('input-name').value = "";
 
-        // 2. 非同步讀取資料檔 (JSON)
+        // 2. 讀取資料檔 (JSON) - 題庫結構
         fetch('./data.json')
             .then(response => {
                 if (!response.ok) throw new Error("Network response was not ok");
@@ -117,14 +113,12 @@ const APP = {
                 APP_DATA = data;
                 console.log("[App] Data loaded successfully");
                 
-                // 資料載入後的初始化動作
                 APP.renderBankButtons();
-                APP.updateLeaderboardV11(); 
-                F1.initSetup();
-                TOUR.initSetup();
-                
                 // 預設選取第一個題庫
                 if(APP_DATA.banks.length > 0) APP.state.currentBankId = APP_DATA.banks[0].id;
+                
+                // ★★★ 修改重點：資料載入後，開始同步雲端紀錄 ★★★
+                APP.syncHistory(); 
             })
             .catch(error => {
                 console.error("[App] Failed to load data.json:", error);
@@ -137,6 +131,47 @@ const APP = {
 
         APP.initTouchControl();
         APP.setupHistoryTrap();
+    },
+
+    // ★★★ 新增：同步歷史紀錄函式 ★★★
+    syncHistory: function() {
+        const leaderboardContainer = document.getElementById('leaderboard-grid');
+        leaderboardContainer.innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">☁️ 正在連線雲端資料庫...</div>';
+
+        // 先讀取本地備份，以免網路太慢畫面空白
+        const localSaved = localStorage.getItem('cheng_nature_game_log_v2');
+        if (localSaved) {
+            APP.state.history = JSON.parse(localSaved);
+            APP.updateLeaderboardV11(); // 先顯示舊資料
+        }
+
+        // 開始從 Google Sheets 抓取最新資料
+        if(API_URL.includes("script.google.com")) {
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(cloudData => {
+                    console.log("[Cloud] Loaded records:", cloudData.length);
+                    // 覆蓋本地資料
+                    APP.state.history = cloudData;
+                    // 更新介面
+                    APP.updateLeaderboardV11(); 
+                    F1.initSetup();
+                    TOUR.initSetup();
+                    
+                    // 順便備份一份到 localStorage 以防下次離線
+                    localStorage.setItem('cheng_nature_game_log_v2', JSON.stringify(cloudData));
+                })
+                .catch(err => {
+                    console.error("[Cloud] Load failed:", err);
+                    // 如果連線失敗，至少我們剛剛已經顯示了本地資料
+                    // 可以在這裡加一個小提示 "離線模式"
+                });
+        } else {
+             console.warn("API_URL 尚未設定，僅使用本地模式");
+             APP.updateLeaderboardV11();
+             F1.initSetup();
+             TOUR.initSetup();
+        }
     },
 
     initTouchControl: function() {
@@ -577,8 +612,23 @@ const APP = {
             timestamp: new Date().getTime() 
         };
         
+        // 1. 先更新本地狀態 (讓使用者感覺很快)
         APP.state.history.push(record);
+        // 依照時間排序 (新的在前，或依邏輯) - 這裡簡單推入，顯示時會重排
         localStorage.setItem('cheng_nature_game_log_v2', JSON.stringify(APP.state.history));
+        
+        // 2. 背景上傳至 Google Sheets
+        if(API_URL.includes("script.google.com")) {
+            // 使用 no-cors 模式或 text/plain 以避免跨域錯誤
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(record),
+                headers: { "Content-Type": "text/plain;charset=utf-8" }
+            })
+            .then(res => res.json())
+            .then(data => console.log("[Cloud] Upload success", data))
+            .catch(err => console.error("[Cloud] Upload failed", err));
+        }
     }
 };
 
