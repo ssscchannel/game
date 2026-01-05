@@ -1060,7 +1060,7 @@ const TOUR = {
                 finalRank: 0 
             });
         }
-        
+        TOUR.roundCounter = 1;
         TOUR.stage = 'regular';
         TOUR.setupRoundMatches();
     },
@@ -1068,9 +1068,14 @@ const TOUR = {
     setupRoundMatches: function() {
         let activeList = TOUR.players.filter(p => p.active);
         
-        if (activeList.length === 4 && TOUR.stage === 'regular') {
-            TOUR.stage = 'semi'; 
-        }
+		// 增加對 2 人的判斷，防止 5->3->2 的情況卡死在 Regular
+		if (TOUR.stage === 'regular') {
+			if (activeList.length === 2) {
+				TOUR.stage = 'final';
+			} else if (activeList.length === 4) {
+				TOUR.stage = 'semi';
+			}
+		}
 
         activeList.sort(() => Math.random() - 0.5);
 
@@ -1098,7 +1103,7 @@ const TOUR = {
         if (TOUR.stage === 'semi') stageName = "準決賽";
         else if (TOUR.stage === 'bronze') stageName = "季軍戰";
         else if (TOUR.stage === 'final') stageName = "冠軍戰";
-        else stageName = `第一輪`;
+        else stageName = `第 ${TOUR.roundCounter} 輪`;
 
         document.getElementById('vs-stage-name').innerText = stageName;
         document.getElementById('vs-p1-name').innerText = match.p1.name;
@@ -1221,6 +1226,7 @@ const TOUR = {
             TOUR.showNextMatchVS();
             return;
         }
+		TOUR.roundCounter++;
 
         TOUR.setupRoundMatches();
     },
