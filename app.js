@@ -1057,7 +1057,7 @@ const TOUR = {
             TOUR.players.push({
                 id: i, name: val, active: true, 
                 totalTime: 0, matchesCount: 0, 
-                finalRank: 0 
+                finalRank: 0,
 				byesCount: 0  // ★★★ 新增這一行：初始化輪空次數 ★★★
             });
         }
@@ -1483,7 +1483,16 @@ const GAME = {
 
             }
             el.dataset.matchId = d.matchId;
-            el.onclick = () => GAME.handleCardClick(el);
+            // 同時支援電腦(click)與手機(touchstart)，並防止手機上的延遲與連點干擾
+            const handleInput = (e) => {
+                // 如果是觸控事件，阻止預設行為(防止產生之後的 click 事件)
+                if (e.type === 'touchstart') e.preventDefault();
+                GAME.handleCardClick(el);
+            };
+
+            el.addEventListener('touchstart', handleInput, { passive: false });
+            el.addEventListener('click', handleInput);
+			
             grid.appendChild(el);
         });
 
