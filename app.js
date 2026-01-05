@@ -1058,6 +1058,7 @@ const TOUR = {
                 id: i, name: val, active: true, 
                 totalTime: 0, matchesCount: 0, 
                 finalRank: 0 
+				byesCount: 0  // ★★★ 新增這一行：初始化輪空次數 ★★★
             });
         }
         TOUR.roundCounter = 1;
@@ -1078,6 +1079,16 @@ const TOUR = {
 		}
 
         activeList.sort(() => Math.random() - 0.5);
+		
+		// ★★★ 新增這段邏輯：處理輪空者 ★★★
+		// 如果人數是奇數，最後一個人就是輪空 (Bye)
+		if (activeList.length % 2 !== 0) {
+			let byePlayer = activeList[activeList.length - 1];
+			if (byePlayer) {
+				byePlayer.byesCount = (byePlayer.byesCount || 0) + 1;
+				console.log(`選手 ${byePlayer.name} 本輪輪空晉級`);
+			}
+		}
 
         TOUR.matchQueue = [];
         
@@ -1282,10 +1293,12 @@ const TOUR = {
             winners.forEach(p => {
                 let avg = p.matchesCount > 0 ? (p.totalTime / p.matchesCount) : 0;
                 
-                APP.saveRecord({
+                let totalRounds = p.matchesCount + (p.byesCount || 0);
+				
+				APP.saveRecord({
                     player: p.name, school: school, bankId: bankId, bankTitle: bankTitle,
                     mode: 'tournament', time: p.totalTime, 
-                    avgTime: avg, rounds: p.matchesCount,
+                    avgTime: avg, rounds: totalRounds,
                     score: p.finalRank, 
                     errors: 0
                 });
