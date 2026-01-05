@@ -23,10 +23,52 @@ const VERSION_HISTORY = {
     "V14-P8": "【全域藍色與動畫優化】統一背景色為 #2b4b82，手速動畫速度加倍，品牌列去背與 Start 按鈕優化。"
 };
 
+// ==========================================================
+// [FUTURE ROADMAP / 待辦事項]
+// 1. 題庫動態化 (Prio: Medium)
+//    - 目標：不需更新 app.js 即可切換題庫
+//    - 方法：首頁新增「輸入代碼」欄位 -> 透過 API 抓取對應 Google Sheets 資料
+// ==========================================================
+
 // 這是全域變數，稍後會從 data.json 填入
 const API_URL = "https://script.google.com/macros/s/AKfycbz4UrD4QF47dRe9FtIFNpb4JwK0FhxG0G80rZdx9NVSdVjeKbytpA_BScO8w4zdZoCm/exec"; 
 let APP_DATA = { banks: [] };
 const F1_POINTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
+
+// ==========================================================
+// 0.5 資源預載模組 (New)
+// ==========================================================
+const PRELOADER = {
+    cache: [], // 用來存放圖片物件，防止被瀏覽器回收
+    
+    // 判斷是否為圖片的邏輯 (與 GAME.initGrid 保持一致)
+    isImage: function(txt) {
+        if(!txt) return false;
+        return txt.includes('/') || txt.startsWith('data:image') || txt.startsWith('http') || txt.includes('器材/');
+    },
+
+    start: function(data) {
+        if (!data || !data.banks) return;
+        console.log("[Preloader] Start background loading...");
+        
+        let count = 0;
+        data.banks.forEach(bank => {
+            if (!bank.pairs) return;
+            bank.pairs.forEach(pair => {
+                // 檢查 Q 和 A
+                [pair.q, pair.a].forEach(content => {
+                    if (this.isImage(content)) {
+                        const img = new Image();
+                        img.src = content;
+                        this.cache.push(img); // 強制瀏覽器保留引用
+                        count++;
+                    }
+                });
+            });
+        });
+        console.log(`[Preloader] ${count} images queued for download.`);
+    }
+};
 
 // ==========================================================
 // 1. 音效模組 (AudioContext)
@@ -112,6 +154,8 @@ const APP = {
             .then(data => {
                 APP_DATA = data;
                 console.log("[App] Data loaded successfully");
+				
+				PRELOADER.start(APP_DATA);
                 
                 APP.renderBankButtons();
                 // 預設選取第一個題庫
