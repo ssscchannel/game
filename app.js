@@ -1233,6 +1233,30 @@ const TOUR = {
 
     showPodium: function() {
         AUDIO.playWin();
+		
+		// 檢查是否已經有季軍 (正規季軍戰產生的)
+        const hasRank3 = TOUR.players.some(p => p.finalRank === 3);
+        
+        if (!hasRank3) {
+            // 找出所有還沒有名次的人 (Rank 0)
+            let unranked = TOUR.players.filter(p => p.finalRank === 0);
+            
+            // 進行排序來決定誰是第 3 名
+            // 排序邏輯：1. 存活輪數/場次較多者優先  2. 平均時間較快者優先
+            unranked.sort((a,b) => {
+                if (b.matchesCount !== a.matchesCount) return b.matchesCount - a.matchesCount;
+                // 防呆：如果 matchesCount 是 0 (例如第一輪輪空但第二輪馬上輸)，避免除以 0
+                let avgA = a.matchesCount > 0 ? a.totalTime/a.matchesCount : 9999;
+                let avgB = b.matchesCount > 0 ? b.totalTime/b.matchesCount : 9999;
+                return avgA - avgB;
+            });
+
+            // 將排序第一的人指定為第 3 名
+            if (unranked.length > 0) {
+                unranked[0].finalRank = 3;
+            }
+        }
+		
         let winners = [];
 
         // 👇 修改這裡：增加判斷「!TOUR.players.some(p => p.finalRank > 0)」
